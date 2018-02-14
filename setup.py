@@ -30,6 +30,10 @@ setup(
 
     packages=find_packages(exclude=['docs']),
 
-    install_requires=['numpy', 'co2syspy', 'gsw', 'attrs', 'xarray', 'pandas'],
-    tests_require=['pytest']
+
+    install_requires=['numpy', 'co2syspy', 'gsw', 'attrs', 'xarray', 'pandas',
+                      'matplotlib', 'scipy', 'netcdf4'],
+    tests_require=['pytest'],
+    package_data={'mcforward': ['modelparams/*.mat',
+                                'omega/*.nc', 'omega/*.mat']},
 )
