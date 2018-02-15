@@ -77,7 +77,7 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth):
     omega = get_omega(latlon, depth=depth)
     draws = get_draws(spp)
 
-    mgca = np.empty(len(seatemp), len(draws.sigma))
+    mgca = np.empty((len(seatemp), len(draws.sigma)))
     mgca[:] = np.nan
 
     for i, sigma_now in enumerate(draws.sigma):
