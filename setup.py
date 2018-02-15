@@ -32,8 +32,9 @@ setup(
 
 
     install_requires=['numpy', 'co2syspy', 'gsw', 'attrs', 'xarray', 'pandas',
-                      'matplotlib', 'scipy', 'netcdf4'],
+                      'matplotlib', 'scipy', 'netcdf4', 'shapely'],
     tests_require=['pytest'],
     package_data={'mcforward': ['modelparams/*.mat',
-                                'omega/*.nc', 'omega/*.mat']},
+                                'omega/observations/*.nc',
+                                'omega/observations/*.mat']},
 )
