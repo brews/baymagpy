@@ -1,10 +1,9 @@
-from pkgutil import get_data
-from io import BytesIO
 from co2sys import CO2SYS
 from gsw.conversions import p_from_z
 import shapely.geometry
+import xarray as xr
 
-from mcforward.omega.utils import get_nearest
+from mcforward.omega.utils import get_nearest, DistanceThresholdError
 from mcforward.utils import get_matlab_resource, get_netcdf_resource
 
 
@@ -23,14 +22,10 @@ def get_omega(latlon, depth):
     -------
     out : float
     """
-    assert latlon[0] < 90 and latlon[0] > -90
-    assert latlon[1] < 180 and latlon[1] >= -180
-
     pres = p_from_z(z=-depth, lat=latlon[0])  # sea pressure ( i.e. absolute pressure - 10.1325 dbar )
 
     alk_d = get_netcdf_resource('omega/observations/Alk.nc')[['Alk']]
     dic_d = get_netcdf_resource('omega/observations/TCO2.nc')[['TCO2']]
-
     si_d = get_netcdf_resource('omega/observations/woa13_Si_v2.nc',
                                decode_times=False)[['i_an']]
     sal_d = get_netcdf_resource('omega/observations/woa13_S_v2.nc',
@@ -40,12 +35,32 @@ def get_omega(latlon, depth):
     temp_d = get_netcdf_resource('omega/observations/woa13_T_v2.nc',
                                  decode_times=False)[['t_an']]
 
-    scs_d = get_matlab_resource('omega/observations/scs.mat')
+    # South China Sea Data
+    scs_d_mat = get_matlab_resource('omega/observations/scs.mat')
+    scs_d = xr.Dataset({'alk': (['depth'], scs_d_mat['alk'].ravel()),
+                        'tco2': (['depth'], scs_d_mat['tco2'].ravel())},
+                       coords={'depth': (['depth'], scs_d_mat['depth'].ravel())})
 
-    # Omegas from special places
-    carib_d = get_matlab_resource('omega/observations/carib.mat')
-    gom_d = get_matlab_resource('omega/observations/gom.mat')
-    arctic_d = get_matlab_resource('omega/observations/arctic.mat')
+    # Caribbean
+    carib_d_mat = get_matlab_resource('omega/observations/carib.mat')
+    carib_d = xr.Dataset({'ph': (['depth'], carib_d_mat['ph'].ravel()),
+                          'omega': (['depth'], carib_d_mat['omega'].ravel()),
+                          'carb': (['depth'], carib_d_mat['carb'].ravel())},
+                         coords={'depth': (['depth'], carib_d_mat['depth'].ravel())})
+
+    # Gulf of Mexico
+    gom_d_mat = get_matlab_resource('omega/observations/gom.mat')
+    gom_d = xr.Dataset({'ph': (['depth'], gom_d_mat['ph'].ravel()),
+                        'omega': (['depth'], gom_d_mat['omega'].ravel()),
+                        'carb': (['depth'], gom_d_mat['carb'].ravel())},
+                       coords={'depth': (['depth'], gom_d_mat['depth'].ravel())})
+
+    # Arctic
+    arctic_d_mat = get_matlab_resource('omega/observations/arctic.mat')
+    arctic_d = xr.Dataset({'ph': (['depth'], arctic_d_mat['ph'].ravel()),
+                           'omega': (['depth'], arctic_d_mat['omega'].ravel()),
+                           'carb': (['depth'], arctic_d_mat['carb'].ravel())},
+                          coords={'depth': (['depth'], arctic_d_mat['depth'].ravel())})
 
     med_alk_d = get_netcdf_resource('omega/observations/med_alk.nc')[['a']]
     ph_med_d = get_netcdf_resource('omega/observations/med_ph.nc')[['a']]
@@ -57,9 +72,9 @@ def get_omega(latlon, depth):
                                               (45, 30),
                                               (-5.5, 30)])
     southchina_sea = shapely.geometry.Polygon([(106.2, 2.75),
-                                          (104, 25),
-                                          (119, 23),
-                                          (120.5, 7)])
+                                               (104, 25),
+                                               (119, 23),
+                                               (120.5, 7)])
     caribbean = shapely.geometry.Polygon([(-77.5, 8),
                                           (-90.8, 18.6),
                                           (-82.4, 22.9),
@@ -79,22 +94,26 @@ def get_omega(latlon, depth):
         ph_s = get_nearest(latlon, ph_med_d['a'], depth=depth)
 
     # alk
-    alk_s = get_nearest(latlon, alk_d['Alk'], depth=depth,
-                        lat_coord='latitude', lon_coord='longitude')
     if southchina_sea.contains(target_location):
-        raise NotImplementedError
-        # TODO(brews): Finish S. China sea conditional - uses MATLAB file input. See ln 206-218 of grab_omega.m
-        # alk_s = match
+        alk_s = scs_d['alk'].sel(depth=depth, method='pad')
     elif mediterranean.contains(target_location):
         alk_s = get_nearest(latlon, med_alk_d['a'], depth=depth)
+    else:
+        try:
+            alk_s = get_nearest(latlon, alk_d['Alk'], depth=depth,
+                                lat_coord='latitude', lon_coord='longitude')
+        except DistanceThresholdError:
+            alk_s = None
 
     # DIC
-    dic_s = get_nearest(latlon, dic_d['TCO2'], depth=depth,
-                        lat_coord='latitude', lon_coord='longitude')
     if southchina_sea.contains(target_location):
-        raise NotImplementedError
-        # TODO(brews): Finish S. China sea conditional - uses MATLAB file input. See ln 233-245 of grab_omega.m
-        # dic_s = match
+        dic_s = scs_d['tco2'].sel(depth=depth, method='pad')
+    else:
+        try:
+            dic_s = get_nearest(latlon, dic_d['TCO2'], depth=depth,
+                                lat_coord='latitude', lon_coord='longitude')
+        except DistanceThresholdError:
+            dic_s = None
 
     # SI
     si_s = get_nearest(latlon, si_d['i_an'], depth=depth)
@@ -119,20 +138,17 @@ def get_omega(latlon, depth):
     k1k2c = 4  # H2CO3 and HCO3- dissociation constants K1 and K2 - here "Mehrbach refit"
     kso4c = 1  # HSo4- dissociation constants KSo4 - "Dickson"
 
-    omega = CO2SYS(alk_s, dic_s, par1type, par2type, sal_s, temp_s, tempout,
-                   presin, presout, si_s, p_s, phscale, k1k2c, kso4c)[0]['OmegaCAin']
     if mediterranean.contains(target_location):
         omega = CO2SYS(alk_s, ph_s, par1type, par3type, sal_s, temp_s, tempout,
                        presin, presout, si_s, p_s, phscale, k1k2c, kso4c)[0]['OmegaCAin']
     elif caribbean.contains(target_location):
-        # TODO(brews): Write this. Uses MATLAB file input. ln 314-321 of get_omega.m
-        raise NotImplementedError
-        # omega =
+        omega = carib_d['omega'].sel(depth=depth, method='pad').values
     elif gulf_mexico.contains(target_location):
-        # TODO(brews): Write this. Uses MATLAB file input. ln 324-330 of get_omega.m
-        raise NotImplementedError
+        omega = gom_d['omega'].sel(depth=depth, method='pad').values
     elif latlon[0] > 65:
-        # TODO(brews): Write this. Uses MATLAB file input. ln 334-340 of get_omega.m
-        raise NotImplementedError
+        omega = arctic_d['omega'].sel(depth=depth, method='pad').values
+    else:
+        omega = CO2SYS(alk_s, dic_s, par1type, par2type, sal_s, temp_s, tempout,
+                       presin, presout, si_s, p_s, phscale, k1k2c, kso4c)[0]['OmegaCAin']
 
     return omega
