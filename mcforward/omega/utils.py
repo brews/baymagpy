@@ -2,7 +2,7 @@ import numpy as np
 
 
 def chord_distance(latlon1, latlon2):
-    """Chordal distance between two groups of latlon points
+    """Chordal distance between two sequences of (lat, lon) points
 
     Parameters
     ----------
@@ -76,7 +76,7 @@ def get_nearest(latlon, dain, depth=None, lat_coord='lat', lon_coord='lon',
     ----------
     latlon : sequence
         Target latitude and longitude. Must be -90 to 90 and -180 to 180.
-    da : xarray.DataArray
+    dain : xarray.DataArray
         Field with regular latlon coordinates.
     depth : float or int, optional
         Target depth to get nearest.
@@ -110,7 +110,6 @@ def get_nearest(latlon, dain, depth=None, lat_coord='lat', lon_coord='lon',
 
     assert (da[lat_coord].ndim == 1) and (da[lon_coord].ndim == 1)
 
-
     # First, find the nearest depth index, if given.
     if depth is not None:
         assert depth_coord in da.coords
@@ -131,6 +130,6 @@ def get_nearest(latlon, dain, depth=None, lat_coord='lat', lon_coord='lon',
     nearest_distance = np.min(distance)
 
     if nearest_distance > distance_threshold:
-        raise DistanceThresholdError
+        raise DistanceThresholdError(nearest_distance, distance_threshold)
 
     return nearest
