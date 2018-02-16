@@ -115,6 +115,7 @@ def get_nearest(latlon, dain, depth=None, lat_coord='lat', lon_coord='lon',
         assert depth_coord in da.coords
 
         # Note use 'pad' because want next upper water column level value.
+        da = da.sortby('depth')
         da = da.sel(**{depth_coord: depth}, method='pad')
 
     # Now search for nearest latlon point.
