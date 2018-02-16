@@ -6,10 +6,10 @@ def chord_distance(latlon1, latlon2):
 
     Parameters
     ----------
-    latlon1 : ndarray
-        An nx2 array of latitudes and longitudes for one set of points.
-    latlon2 : ndarray
-        An mx2 array of latitudes and longitudes for another set of points.
+    latlon1 : sequence of tuples
+        (latitude, longitude) for one set of points.
+    latlon2 : sequence of tuples
+        A sequence of (latitude, longitude) for another set of points.
 
     Returns
     -------
@@ -24,8 +24,8 @@ def chord_distance(latlon1, latlon2):
     """
     earth_radius = 6378.137  # in km
 
-    assert latlon1.shape[1] == 2
-    assert latlon2.shape[1] == 2
+    latlon1 = np.atleast_2d(latlon1)
+    latlon2 = np.atleast_2d(latlon2)
 
     n = latlon1.shape[0]
     m = latlon2.shape[0]
