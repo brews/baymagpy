@@ -38,8 +38,8 @@ def test_get_nearest_depth(latlondepth_da):
     """Simple test of get_nearest for latlon with depth"""
     victim = get_nearest(latlon=(17.3, -48.4), dain=latlondepth_da, depth=0.7)
 
-    np.testing.assert_equal(victim.values, np.array([0]))
-    np.testing.assert_equal(victim.depth.values, np.array([0]))
+    np.testing.assert_equal(victim.values, np.array([4]))
+    np.testing.assert_equal(victim.depth.values, np.array([1]))
     assert victim.yx.to_dict()['data'] == (17.5, -48.5)
 
 

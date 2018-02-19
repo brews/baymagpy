@@ -6,7 +6,7 @@ import mcforward.omega
 
 def test_get_omega():
     """General get_omega test case"""
-    goal = 1.109015460859011
+    goal = 1.112018219432555
     latlon = (17.3, -48.4)
     depth = 3975
     victim = mcforward.omega.get_omega(latlon=latlon, depth=depth)
@@ -15,7 +15,7 @@ def test_get_omega():
 
 def test_get_omega_scs():
     """Test for site in South China Sea"""
-    goal = 1.211158375916222
+    goal = 1.209596401825736
     latlon = (15.463, 114.398)
     depth = 1446
     victim = mcforward.omega.get_omega(latlon=latlon, depth=depth)
@@ -33,7 +33,7 @@ def test_get_omega_caribbean():
 
 def test_get_omega_mediterranean():
     """Test ofr site in Mediterranean"""
-    goal = 3.104607691920995
+    goal = 3.247495785049527
     latlon = (34.53, 17.98)
     depth = 3402
     victim = mcforward.omega.get_omega(latlon=latlon, depth=depth)
@@ -42,7 +42,7 @@ def test_get_omega_mediterranean():
 
 def test_get_omega_gom():
     """Test from site in Gulf of Mexico"""
-    goal = 1.814556959320858
+    goal = 1.810377376823078
     latlon = (23.2, -90.0)
     depth = 599
     victim = mcforward.omega.get_omega(latlon=latlon, depth=depth)

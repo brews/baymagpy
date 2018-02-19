@@ -95,7 +95,7 @@ def get_omega(latlon, depth):
 
     # alk
     if southchina_sea.contains(target_location):
-        alk_s = scs_d['alk'].sel(depth=depth, method='pad')
+        alk_s = scs_d['alk'].sel(depth=depth, method='nearest')
     elif mediterranean.contains(target_location):
         alk_s = get_nearest(latlon, med_alk_d['a'], depth=depth)
     else:
@@ -107,7 +107,7 @@ def get_omega(latlon, depth):
 
     # DIC
     if southchina_sea.contains(target_location):
-        dic_s = scs_d['tco2'].sel(depth=depth, method='pad')
+        dic_s = scs_d['tco2'].sel(depth=depth, method='nearest')
     else:
         try:
             dic_s = get_nearest(latlon, dic_d['TCO2'], depth=depth,
@@ -142,11 +142,11 @@ def get_omega(latlon, depth):
         omega = CO2SYS(alk_s, ph_s, par1type, par3type, sal_s, temp_s, tempout,
                        presin, presout, si_s, p_s, phscale, k1k2c, kso4c)[0]['OmegaCAin']
     elif caribbean.contains(target_location):
-        omega = carib_d['omega'].sel(depth=depth, method='pad').values
+        omega = carib_d['omega'].sel(depth=depth, method='nearest').values
     elif gulf_mexico.contains(target_location):
-        omega = gom_d['omega'].sel(depth=depth, method='pad').values
+        omega = gom_d['omega'].sel(depth=depth, method='nearest').values
     elif latlon[0] > 65:
-        omega = arctic_d['omega'].sel(depth=depth, method='pad').values
+        omega = arctic_d['omega'].sel(depth=depth, method='nearest').values
     else:
         omega = CO2SYS(alk_s, dic_s, par1type, par2type, sal_s, temp_s, tempout,
                        presin, presout, si_s, p_s, phscale, k1k2c, kso4c)[0]['OmegaCAin']
