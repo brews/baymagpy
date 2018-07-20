@@ -3,8 +3,8 @@ from gsw.conversions import p_from_z
 import shapely.geometry
 import xarray as xr
 
-from mcforward.omega.utils import get_nearest, DistanceThresholdError
-from mcforward.utils import get_matlab_resource, get_netcdf_resource
+from baymag.omega.utils import get_nearest, DistanceThresholdError
+from baymag.utils import get_matlab_resource, get_netcdf_resource
 
 
 def get_omega(latlon, depth):

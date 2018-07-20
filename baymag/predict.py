@@ -1,8 +1,8 @@
 import attr
 import numpy as np
 
-from mcforward.omega import get_omega
-from mcforward.modelparams import get_draws
+from baymag.omega import get_omega
+from baymag.modelparams import get_draws
 
 
 @attr.s

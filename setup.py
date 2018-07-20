@@ -2,14 +2,14 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name='mcforward',
+    name='baymagpy',
     version='0.0.1',
     description='Calibration of Mg/Ca records using Bayesian regression',
     license='GPLv3',
 
     author='S. Brewster Malevich',
     author_email='malevich@email.arizona.edu',
-    url='https://github.com/brews/mcforward',
+    url='https://github.com/brews/baymagpy',
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -34,7 +34,7 @@ setup(
     install_requires=['numpy', 'co2syspy', 'gsw', 'attrs', 'xarray', 'pandas',
                       'matplotlib', 'scipy', 'netcdf4', 'shapely'],
     tests_require=['pytest'],
-    package_data={'mcforward': ['modelparams/*.mat',
+    package_data={'baymag': ['modelparams/*.mat',
                                 'omega/observations/*.nc',
                                 'omega/observations/*.mat']},
 )

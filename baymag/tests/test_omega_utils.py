@@ -2,7 +2,7 @@ import pytest
 import xarray as xr
 import numpy as np
 
-from mcforward.omega.utils import get_nearest, chord_distance, DistanceThresholdError
+from baymag.omega.utils import get_nearest, chord_distance, DistanceThresholdError
 
 
 @pytest.fixture

@@ -3,7 +3,7 @@ from copy import deepcopy
 import attr
 import numpy as np
 
-from mcforward.utils import get_matlab_resource
+from baymag.utils import get_matlab_resource
 
 
 @attr.s

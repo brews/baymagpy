@@ -1,11 +1,11 @@
 import pytest
 import numpy as np
 
-import mcforward.predict
+import baymag.predict
 
 
 def test_percentile():
-    prediction_test = mcforward.predict.Prediction(ensemble=np.array([range(10), range(10)]),
+    prediction_test = baymag.predict.Prediction(ensemble=np.array([range(10), range(10)]),
                                                    spp='ruber')
     victim = prediction_test.percentile()
     goal = np.array([[0, 0], [4, 4], [9, 9]]).T
@@ -14,7 +14,7 @@ def test_percentile():
 
 def test_predict_mgca():
     np.random.seed(123)
-    victim = mcforward.predict.predict_mgca(seatemp=np.array([10, 20, 30]),
+    victim = baymag.predict.predict_mgca(seatemp=np.array([10, 20, 30]),
                                             cleaning=np.array([1] * 3),
                                             spp='ruber',
                                             latlon=(17.3, -48.4),
