@@ -1,7 +1,7 @@
 import attr
 import numpy as np
 
-from baymag.omega import get_omega
+from baymag.omega import carbion
 from baymag.modelparams import get_draws
 
 
@@ -74,7 +74,7 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth):
     out : MgCaPrediction
     """
 
-    omega = get_omega(latlon, depth=depth)
+    ph, delta_co3, omega = carbion(latlon, depth=depth)
     draws = get_draws(spp)
 
     mgca = np.empty((len(seatemp), len(draws.sigma)))

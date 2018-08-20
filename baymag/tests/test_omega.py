@@ -9,8 +9,8 @@ def test_get_omega():
     goal = 1.112018219432555
     latlon = (17.3, -48.4)
     depth = 3975
-    victim = baymag.omega.get_omega(latlon=latlon, depth=depth)
-    np.testing.assert_allclose(victim, goal, atol=1e-5)
+    _, _, victim = baymag.omega.carbion(latlon=latlon, depth=depth)
+    np.testing.assert_allclose(victim, goal, atol=1e-3, rtol=0)
 
 
 def test_get_omega_scs():
@@ -18,8 +18,8 @@ def test_get_omega_scs():
     goal = 1.209596401825736
     latlon = (15.463, 114.398)
     depth = 1446
-    victim = baymag.omega.get_omega(latlon=latlon, depth=depth)
-    np.testing.assert_allclose(victim, goal, atol=1e-4)
+    _, _, victim = baymag.omega.carbion(latlon=latlon, depth=depth)
+    np.testing.assert_allclose(victim, goal, atol=1e-3, rtol=0)
 
 
 def test_get_omega_caribbean():
@@ -27,8 +27,8 @@ def test_get_omega_caribbean():
     goal = 1.620837849676754
     latlon = (20.42, -80.14)
     depth = 2330
-    victim = baymag.omega.get_omega(latlon=latlon, depth=depth)
-    np.testing.assert_allclose(victim, goal, atol=1e-4)
+    _, _, victim = baymag.omega.carbion(latlon=latlon, depth=depth)
+    np.testing.assert_allclose(victim, goal, atol=1e-3, rtol=0)
 
 
 def test_get_omega_mediterranean():
@@ -36,8 +36,8 @@ def test_get_omega_mediterranean():
     goal = 3.247495785049527
     latlon = (34.53, 17.98)
     depth = 3402
-    victim = baymag.omega.get_omega(latlon=latlon, depth=depth)
-    np.testing.assert_allclose(victim, goal, atol=1e-4)
+    _, _, victim = baymag.omega.carbion(latlon=latlon, depth=depth)
+    np.testing.assert_allclose(victim, goal, atol=1e-3, rtol=0)
 
 
 def test_get_omega_gom():
@@ -45,8 +45,8 @@ def test_get_omega_gom():
     goal = 1.810377376823078
     latlon = (23.2, -90.0)
     depth = 599
-    victim = baymag.omega.get_omega(latlon=latlon, depth=depth)
-    np.testing.assert_allclose(victim, goal, atol=1e-4)
+    _, _, victim = baymag.omega.carbion(latlon=latlon, depth=depth)
+    np.testing.assert_allclose(victim, goal, atol=1e-3, rtol=0)
 
 
 def test_get_omega_arctic():
@@ -54,5 +54,5 @@ def test_get_omega_arctic():
     goal = 1.205628075781792
     latlon = (67.9, -4.0)
     depth = 3676
-    victim = baymag.omega.get_omega(latlon=latlon, depth=depth)
-    np.testing.assert_allclose(victim, goal, atol=1e-4)
+    _, _, victim = baymag.omega.carbion(latlon=latlon, depth=depth)
+    np.testing.assert_allclose(victim, goal, atol=1e-3, rtol=0)

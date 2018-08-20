@@ -1,1 +1,1 @@
-from baymag.omega.core import get_omega
+from baymag.omega.core import carbion

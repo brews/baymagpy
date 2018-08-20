@@ -7,8 +7,8 @@ from baymag.omega.utils import get_nearest, DistanceThresholdError
 from baymag.utils import get_matlab_resource, get_netcdf_resource
 
 
-def get_omega(latlon, depth):
-    """Calculate modern carbonate ion concentration and omega for a location
+def carbion(latlon, depth):
+    """Calculate modern carbonate ion concentration, pH, and omega for a location
 
     Parameters
     ----------
@@ -20,7 +20,10 @@ def get_omega(latlon, depth):
 
     Returns
     -------
-    out : float
+    ph : float
+    delta_co3 : float
+        Carbonate ion concentration (umol/L)
+    omega : float
     """
     pres = p_from_z(z=-depth, lat=latlon[0])  # sea pressure ( i.e. absolute pressure - 10.1325 dbar )
 
@@ -139,16 +142,33 @@ def get_omega(latlon, depth):
     kso4c = 1  # HSo4- dissociation constants KSo4 - "Dickson"
 
     if mediterranean.contains(target_location):
-        omega = CO2SYS(alk_s, ph_s, par1type, par3type, sal_s, temp_s, tempout,
-                       presin, presout, si_s, p_s, phscale, k1k2c, kso4c)[0]['OmegaCAin']
+        out, _ = CO2SYS(alk_s, ph_s, par1type, par3type, sal_s, temp_s, tempout,
+                        presin, presout, si_s, p_s, phscale, k1k2c, kso4c)
+        omega = out['OmegaCAin']
+        co3 = out['CO3in']
+        ph = out['pHin']
+        co3_sat = co3 / omega
+        delta_co3 = co3 - co3_sat
     elif caribbean.contains(target_location):
         omega = carib_d['omega'].sel(depth=depth, method='nearest').values
+        delta_co3 = carib_d['carb'].sel(depth=depth, method='nearest').values
+        ph = carib_d['ph'].sel(depth=depth, method='nearest').values
     elif gulf_mexico.contains(target_location):
         omega = gom_d['omega'].sel(depth=depth, method='nearest').values
-    elif latlon[0] > 65:
+        delta_co3 = gom_d['carb'].sel(depth=depth, method='nearest').values
+        ph = gom_d['ph'].sel(depth=depth, method='nearest').values
+    elif latlon[0] > 65:  # i.e. arctic site
         omega = arctic_d['omega'].sel(depth=depth, method='nearest').values
-    else:
-        omega = CO2SYS(alk_s, dic_s, par1type, par2type, sal_s, temp_s, tempout,
-                       presin, presout, si_s, p_s, phscale, k1k2c, kso4c)[0]['OmegaCAin']
+        delta_co3 = arctic_d['carb'].sel(depth=depth, method='nearest').values
+        ph = arctic_d['ph'].sel(depth=depth, method='nearest').values
 
-    return omega
+    else:
+        out, _ = CO2SYS(alk_s, dic_s, par1type, par2type, sal_s, temp_s, tempout,
+                        presin, presout, si_s, p_s, phscale, k1k2c, kso4c)
+        omega = out['OmegaCAin']
+        co3 = out['CO3in']
+        ph = out['pHin']
+        co3_sat = co3 / omega
+        delta_co3 = co3 - co3_sat
+
+    return float(ph), float(delta_co3), float(omega)
