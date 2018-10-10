@@ -1,12 +1,18 @@
 from setuptools import setup, find_packages
 
 
+def readme():
+    with open('README.md') as f:
+        return f.read()
+
+
 setup(
     name='baymagpy',
     version='0.0.1',
     description='Calibration of Mg/Ca records using Bayesian regression',
+    long_description=readme(),
+    long_description_content_type="text/markdown",
     license='GPLv3',
-
     author='S. Brewster Malevich',
     author_email='malevich@email.arizona.edu',
     url='https://github.com/brews/baymagpy',
