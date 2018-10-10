@@ -50,7 +50,7 @@ class MgCaPrediction(Prediction):
     pass
 
 
-def predict_mgca(seatemp, cleaning, spp, latlon, depth):
+def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False, drawsfun=get_draws):
     """Predict Mg/Ca from sea temperature
 
     Parameters
@@ -60,33 +60,52 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth):
         location.
     cleaning : ndarray
         n-length array indicating the cleaning method used for the inferred
-        Mg/Ca series. ``1`` for BCP, ``2`` for reductive.
+        Mg/Ca series. ``1`` for BCP, ``0`` for reductive.
     spp : str
         Foraminifera species of the inferred Mg/Ca series.
     latlon : tuple of floats
         Latitude and longitude of site. Latitude must be between -90 and 90.
         Longitude between -180 and 180.
     depth : float
-        Water depth (m).
+        Water depth (m). Increasing values indicate increasing depth below sea
+        level.
+    seasonal_seatemp : bool, optional
+        Indicates whether sea-surface temperature is annual or seasonal
+        estimate. If ``True``, ``spp`` must be specified.
+    drawsfun : function-like, optional
+        For debugging and testing. Object to be called to get MCMC model
+        parameter draws. Don't mess with this.
 
     Returns
     -------
     out : MgCaPrediction
     """
+    seatemp = np.array(seatemp)
+    cleaning = np.array(cleaning)
+
+    assert depth >= 0, 'sample `depth` should be positive'
 
     ph, delta_co3, omega = carbion(latlon, depth=depth)
-    draws = get_draws(spp)
 
-    mgca = np.empty((len(seatemp), len(draws.sigma)))
+    # Standardize pH and omega.
+    ph -= 8
+    omega = 1 / omega
+
+    alpha, beta_temp, beta_ph, beta_omega, beta_clean, sigma = drawsfun(spp, seasonal_seatemp)
+
+    mgca = np.empty((len(seatemp), len(sigma)))
     mgca[:] = np.nan
 
-    for i, sigma_now in enumerate(draws.sigma):
-        alpha_now = draws.alpha[i]
-        beta1_now = draws.beta1[i]
-        beta2_now = draws.beta2[i]
-        beta3_now = draws.beta3[i]
-        clean_term = (1 - beta3_now * cleaning)
-        mu = (alpha_now + np.exp(beta1_now * seatemp) + beta2_now * omega) * clean_term
+    for i in range(len(sigma)):
+        alpha_now = alpha[i]
+        beta_temp_now = beta_temp[i]
+        beta_omega_now = beta_omega[i]
+        beta_clean_now = beta_clean[i]
+        beta_ph_now = beta_ph[i]
+        sigma_now = sigma[i]
+        clean_term = (1 - beta_clean_now * cleaning)
+        mu = ((alpha_now + np.exp(beta_temp_now * seatemp + ph * beta_ph_now)
+               + beta_omega_now * omega) * clean_term)
         mgca[:, i] = np.random.normal(mu, sigma_now)
 
     out = MgCaPrediction(ensemble=mgca, spp=spp)

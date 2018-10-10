@@ -34,7 +34,7 @@ setup(
     install_requires=['numpy', 'co2syspy', 'gsw', 'attrs', 'xarray', 'pandas',
                       'matplotlib', 'scipy', 'netcdf4', 'shapely'],
     tests_require=['pytest'],
-    package_data={'baymag': ['modelparams/*.mat',
-                                'omega/observations/*.nc',
-                                'omega/observations/*.mat']},
+    package_data={'baymag': ['modelparams/tracedumps/*.csv',
+                             'omega/observations/*.nc',
+                             'omega/observations/*.mat']},
 )
