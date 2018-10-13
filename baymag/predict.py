@@ -59,8 +59,8 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False, 
         n-length array of sea temperature observations (°C) from a single
         location.
     cleaning : ndarray
-        n-length array indicating the cleaning method used for the inferred
-        Mg/Ca series. ``1`` for BCP, ``0`` for reductive.
+        Binary n-length array indicating the cleaning method used for the
+        inferred Mg/Ca series. ``1`` for reductive, ``0`` for BCP (Barker).
     spp : str
         Foraminifera species of the inferred Mg/Ca series.
     latlon : tuple of floats
@@ -85,7 +85,7 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False, 
 
     assert depth >= 0, 'sample `depth` should be positive'
 
-    ph, delta_co3, omega = carbion(latlon, depth=depth)
+    ph, _, omega = carbion(latlon, depth=depth)
 
     # Standardize pH and omega.
     ph -= 8
