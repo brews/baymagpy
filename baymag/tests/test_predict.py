@@ -19,7 +19,7 @@ def test_predict_mgca():
                                          spp='ruber_w',
                                          latlon=(17.3, -48.4),
                                          depth=3975)
-    goal_median = np.array([1.8, 2.9, 4.7])
+    goal_median = np.array([1.7, 2.8, 4.5])
     np.testing.assert_allclose(np.round(np.median(victim.ensemble, axis=1), 1),
                                np.round(goal_median, 1),
                                atol=1e-1)

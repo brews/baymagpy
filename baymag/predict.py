@@ -85,7 +85,8 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False, 
 
     assert depth >= 0, 'sample `depth` should be positive'
 
-    ph, _, omega = carbion(latlon, depth=depth)
+    _, _, omega = carbion(latlon, depth=depth)
+    ph, _, _ = carbion(latlon, depth=0)
 
     # Standardize pH and omega.
     ph -= 8
