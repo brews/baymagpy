@@ -2,6 +2,8 @@
 
 ## Enhancements
 
+* Add optional arguments to specify pH and omega for `predict_mgca()`.
+
 
 ## Bug fixes
 

@@ -50,7 +50,8 @@ class MgCaPrediction(Prediction):
     pass
 
 
-def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False, drawsfun=get_draws):
+def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False,
+                 ph=None, omega=None, drawsfun=get_draws):
     """Predict Mg/Ca from sea temperature
 
     Parameters
@@ -72,6 +73,11 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False, 
     seasonal_seatemp : bool, optional
         Indicates whether sea-surface temperature is annual or seasonal
         estimate. If ``True``, ``spp`` must be specified.
+    ph : float or None, optional
+        Optional sea water pH. Estimated from sea surface if ``None``.
+    omega : float or None, optional
+        Optional sea water omega. Estimated from sea water at sample depth if
+        ``None``.
     drawsfun : function-like, optional
         For debugging and testing. Object to be called to get MCMC model
         parameter draws. Don't mess with this.
@@ -85,10 +91,13 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False, 
 
     assert depth >= 0, 'sample `depth` should be positive'
 
-    _, _, omega = carbion(latlon, depth=depth)
-    ph, _, _ = carbion(latlon, depth=0)
+    if omega is None:
+        _, _, omega = carbion(latlon, depth=depth)
 
-    # Standardize pH and omega.
+    if ph is None:
+        ph, _, _ = carbion(latlon, depth=0)
+
+    # Standardize pH and omega for model.
     ph -= 8
     omega = 1 / omega
 
