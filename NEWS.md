@@ -8,6 +8,8 @@
 
 * Default distance to raise `DistanceThresholdError` when finding nearest gridpoints is now 20000 km.
 
+* Updated MCMC model parameters. Still very experimental.
+
 
 ## Bug fixes
 
