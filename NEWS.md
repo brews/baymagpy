@@ -10,7 +10,6 @@
 
 * Updated MCMC model parameters. Still very experimental.
 
-
 ## Bug fixes
 
 * Clarify cleaning protocol arguments in `predict_mgca()` (Issue #2).

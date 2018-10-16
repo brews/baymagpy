@@ -8,7 +8,7 @@ def readme():
 
 setup(
     name='baymagpy',
-    version='0.0.1a0',
+    version='0.0.1a1',
     description='Calibration of Mg/Ca records using Bayesian regression',
     long_description=readme(),
     long_description_content_type="text/markdown",
