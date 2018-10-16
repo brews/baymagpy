@@ -4,10 +4,10 @@
 
 * Add optional arguments to specify pH and omega for `predict_mgca()`.
 
-* `baymag.omega.carbion()` now has optional distance threshold argument.
+* `baymag.omega.carbion()` and `predict_mgca` now have optional distance threshold arg.
 
-* Default distance to raise `DistanceThresholdError` when finding nearest 
-    gridpoints is now 20000 km.
+* Default distance to raise `DistanceThresholdError` when finding nearest gridpoints is now 20000 km.
+
 
 ## Bug fixes
 

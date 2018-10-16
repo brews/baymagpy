@@ -51,7 +51,7 @@ class MgCaPrediction(Prediction):
 
 
 def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False,
-                 ph=None, omega=None, drawsfun=get_draws):
+                 ph=None, omega=None, distance_threshold=2000, drawsfun=get_draws):
     """Predict Mg/Ca from sea temperature
 
     Parameters
@@ -78,6 +78,8 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False,
     omega : float or None, optional
         Optional sea water omega. Estimated from sea water at sample depth if
         ``None``.
+    distance_threshold : int, optional
+        Furthest distance (km) to look for gridded data nearest to `latlon`.
     drawsfun : function-like, optional
         For debugging and testing. Object to be called to get MCMC model
         parameter draws. Don't mess with this.
@@ -92,10 +94,10 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False,
     assert depth >= 0, 'sample `depth` should be positive'
 
     if omega is None:
-        _, _, omega = carbion(latlon, depth=depth)
+        _, _, omega = carbion(latlon, depth=depth, distance_threshold=distance_threshold)
 
     if ph is None:
-        ph, _, _ = carbion(latlon, depth=0)
+        ph, _, _ = carbion(latlon, depth=0, distance_threshold=distance_threshold)
 
     # Standardize pH and omega for model.
     ph -= 8
