@@ -1,3 +1,10 @@
+# v0.0.1a2
+
+## Enhancements
+
+## Bug fixes
+
+
 # v0.0.1a1
 
 ## Enhancements
