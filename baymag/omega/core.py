@@ -7,7 +7,7 @@ from baymag.omega.utils import get_nearest, DistanceThresholdError
 from baymag.utils import get_matlab_resource, get_netcdf_resource
 
 
-def carbion(latlon, depth):
+def carbion(latlon, depth, distance_threshold=2000):
     """Calculate modern carbonate ion concentration, pH, and omega for a location
 
     Parameters
@@ -17,6 +17,8 @@ def carbion(latlon, depth):
         Longitude between -180 and 180.
     depth : float
         Water depth (m).
+    distance_threshold : int, optional
+        Furthest distance (km) to look for gridded data nearest to `latlon`.
 
     Returns
     -------
@@ -94,17 +96,20 @@ def carbion(latlon, depth):
     # Grab select variables from nearest gridpoints.
     # pH
     if mediterranean.contains(target_location):
-        ph_s = get_nearest(latlon, ph_med_d['a'], depth=depth)
+        ph_s = get_nearest(latlon, ph_med_d['a'], depth=depth,
+                           distance_threshold=distance_threshold)
 
     # alk
     if southchina_sea.contains(target_location):
         alk_s = scs_d['alk'].sel(depth=depth, method='nearest')
     elif mediterranean.contains(target_location):
-        alk_s = get_nearest(latlon, med_alk_d['a'], depth=depth)
+        alk_s = get_nearest(latlon, med_alk_d['a'], depth=depth,
+                            distance_threshold=distance_threshold)
     else:
         try:
             alk_s = get_nearest(latlon, alk_d['Alk'], depth=depth,
-                                lat_coord='latitude', lon_coord='longitude')
+                                lat_coord='latitude', lon_coord='longitude',
+                                distance_threshold=distance_threshold)
         except DistanceThresholdError:
             alk_s = None
 
@@ -114,21 +119,26 @@ def carbion(latlon, depth):
     else:
         try:
             dic_s = get_nearest(latlon, dic_d['TCO2'], depth=depth,
-                                lat_coord='latitude', lon_coord='longitude')
+                                lat_coord='latitude', lon_coord='longitude',
+                                distance_threshold=distance_threshold)
         except DistanceThresholdError:
             dic_s = None
 
     # SI
-    si_s = get_nearest(latlon, si_d['i_an'], depth=depth)
+    si_s = get_nearest(latlon, si_d['i_an'], depth=depth,
+                       distance_threshold=distance_threshold)
 
     # P
-    p_s = get_nearest(latlon, phos_d['p_an'], depth=depth)
+    p_s = get_nearest(latlon, phos_d['p_an'], depth=depth,
+                      distance_threshold=distance_threshold)
 
     # salinity
-    sal_s = get_nearest(latlon, sal_d['s_an'], depth=depth)
+    sal_s = get_nearest(latlon, sal_d['s_an'], depth=depth,
+                        distance_threshold=distance_threshold)
 
     # Temperature
-    temp_s = get_nearest(latlon, temp_d['t_an'], depth=depth)
+    temp_s = get_nearest(latlon, temp_d['t_an'], depth=depth,
+                         distance_threshold=distance_threshold)
 
     # Now plug all this into CO2SYS
     par1type = 1  # first param is "alkalinity"

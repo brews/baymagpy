@@ -65,7 +65,7 @@ class DistanceThresholdError(Exception):
 
 
 def get_nearest(latlon, dain, depth=None, lat_coord='lat', lon_coord='lon',
-                depth_coord='depth', distance_threshold=1500):
+                depth_coord='depth', distance_threshold=2000):
     """Get nearest non-NaN to latlon from xarray.DataArray obj
 
     Finds the nearest not NaN to latlon, and optionally depth. It searches for a
@@ -87,7 +87,8 @@ def get_nearest(latlon, dain, depth=None, lat_coord='lat', lon_coord='lon',
     depth_coord : str, optional
         Name of the depth coordinate in ``da``.
     distance_threshold : float or int, optional
-        If the nearest distance is larger than this, raise
+        If the nearest distance (km) is larger than this, raise
+        DistanceThresholdError.
 
     Returns
     -------
