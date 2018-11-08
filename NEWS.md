@@ -2,6 +2,9 @@
 
 ## Enhancements
 
+* Add Mg/Ca seawater correction to `predict_mgca` with `sw_age` arg for Deep Time prediction (Issue #3)
+
+
 ## Bug fixes
 
 

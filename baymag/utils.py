@@ -5,6 +5,7 @@ import numpy as np
 import xarray as xr
 import netCDF4
 
+
 def get_matlab_resource(resource, package='baymag', **kwargs):
     """Read flat MATLAB files as package resources, output for Numpy"""
     with BytesIO(get_data(package, resource)) as fl:

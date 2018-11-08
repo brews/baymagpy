@@ -3,6 +3,7 @@ import numpy as np
 
 from baymag.omega import carbion
 from baymag.modelparams import get_draws
+from baymag.modelparams import get_sw_draws
 
 
 @attr.s
@@ -50,8 +51,9 @@ class MgCaPrediction(Prediction):
     pass
 
 
-def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False,
-                 ph=None, omega=None, distance_threshold=2000, drawsfun=get_draws):
+def predict_mgca(seatemp, cleaning, spp, latlon, depth, sw_age=None,
+                 seasonal_seatemp=False, ph=None, omega=None,
+                 distance_threshold=2000, drawsfun=get_draws):
     """Predict Mg/Ca from sea temperature
 
     Parameters
@@ -70,6 +72,10 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False,
     depth : float
         Water depth (m). Increasing values indicate increasing depth below sea
         level.
+    sw_age : ndarray or None, optional
+        Optional n-length sequence indicating the age of values in ``seatemp``
+        to apply Mg/Ca correction for Deep Time seawater. Units must be Ma.
+        Default argument ``None`` does not apply Mg/Ca seawater correction.
     seasonal_seatemp : bool, optional
         Indicates whether sea-surface temperature is annual or seasonal
         estimate. If ``True``, ``spp`` must be specified.
@@ -122,4 +128,45 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, seasonal_seatemp=False,
 
     out = MgCaPrediction(ensemble=mgca, spp=spp)
 
+    if sw_age is not None:
+        out = sw_correction(out, age=sw_age)
+
+    return out
+
+
+def sw_correction(mgcaprediction, age, drawsfun=None):
+    """Apply Deep Time seawater correction to Mg/Ca prediction.
+
+    Parameters
+    ----------
+    mgcaprediction : baymag.predict.MgCaPrediction
+    age : sequence-like
+        Age of predictions in ``prediction``. Must be in units Ma. n-length
+        sequence where n == prediction.ensemble.shape[0].
+    drawsfun : None or function-like, optional
+        Optional function-like returning 2d array of MCMC parameter draws to
+        use for seawater correction. Used for testing and debugging only.
+        Default ``None`` uses ``baymag.modelparams.get_sw_draws()``.
+
+    Returns
+    -------
+    out : baymag.MgCaPrediction
+        Copy of mgcaprediction with correction to ensemble.
+    """
+    if drawsfun is None:
+        beta_draws = get_sw_draws()
+    else:
+        beta_draws = drawsfun()
+
+    age = np.asanyarray(age)
+    mgsw = 1 / (beta_draws[0] * age[:, np.newaxis] + beta_draws[1])
+    # mgsw=1./(age*beta_sw(1,:) + ones(Nobs,1)*beta_sw(2,:));
+
+    # ratio to modern value
+    # TODO(brews): Assume that top value is modern and we have more than one value?
+    mgsw /= mgsw[0]
+    # mgsw=mgsw./repmat(mgsw(1,:),Nobs,1);
+
+    out = MgCaPrediction(ensemble=np.array(mgcaprediction.ensemble * mgsw),
+                         spp=str(mgcaprediction.spp))
     return out

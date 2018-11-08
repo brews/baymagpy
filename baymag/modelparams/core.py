@@ -1,12 +1,14 @@
 from os import path
 import numpy as np
 
-from baymag.utils import get_csv_resource
+from baymag.utils import get_csv_resource, get_matlab_resource
 
 
 POOLEDANNTRACE_PATH = path.join('modelparams', 'tracedumps', 'pooledann.csv')
 HIERANNTRACE_PATH = path.join('modelparams', 'tracedumps', 'hierann.csv')
 HIERSEASTRACE_PATH = path.join('modelparams', 'tracedumps', 'hiersea.csv')
+MGSW_POST = get_matlab_resource(path.join('modelparams', 'mgsw_posterior.mat'),
+                                variable_names=['beta_draws'])
 
 
 class McmcTrace:
@@ -123,7 +125,14 @@ class DrawDispenser:
         return alpha, beta_temp, beta_ph, beta_omega, beta_clean, sigma
 
 
+def get_sw_draws():
+    """Return copy of arrays for Deep Time Mg/Ca seawater correction.
+    """
+    return np.array(MGSW_POST['beta_draws'][:,::2][:, :1500])
+
+
 # Preloading these resources so only need to load once on bayfox import.
-get_draws = DrawDispenser(pooled_annual=PooledTrace(get_csv_resource(POOLEDANNTRACE_PATH)),
-                          hier_annual=HierTrace(get_csv_resource(HIERANNTRACE_PATH)),
-                          hier_seasonal=HierTrace(get_csv_resource(HIERSEASTRACE_PATH)))
+# Drawing every 20 parameter to get 1500 draws.
+get_draws = DrawDispenser(pooled_annual=PooledTrace(get_csv_resource(POOLEDANNTRACE_PATH)[::20]),
+                          hier_annual=HierTrace(get_csv_resource(HIERANNTRACE_PATH)[::20]),
+                          hier_seasonal=HierTrace(get_csv_resource(HIERSEASTRACE_PATH)[::20]))
