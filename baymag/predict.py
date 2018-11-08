@@ -94,9 +94,8 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, sw_age=None,
     -------
     out : MgCaPrediction
     """
-    seatemp = np.array(seatemp)
-    cleaning = np.array(cleaning)
-
+    seatemp = np.atleast_1d(seatemp)
+    cleaning = np.atleast_1d(cleaning)
     assert depth >= 0, 'sample `depth` should be positive'
 
     if omega is None:
@@ -108,23 +107,14 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, sw_age=None,
     # Standardize pH and omega for model.
     ph -= 8
     omega = 1 / omega
+    ph, omega = np.atleast_1d(ph, omega)
 
     alpha, beta_temp, beta_ph, beta_omega, beta_clean, sigma = drawsfun(spp, seasonal_seatemp)
 
-    mgca = np.empty((len(seatemp), len(sigma)))
-    mgca[:] = np.nan
-
-    for i in range(len(sigma)):
-        alpha_now = alpha[i]
-        beta_temp_now = beta_temp[i]
-        beta_omega_now = beta_omega[i]
-        beta_clean_now = beta_clean[i]
-        beta_ph_now = beta_ph[i]
-        sigma_now = sigma[i]
-        clean_term = (1 - beta_clean_now * cleaning)
-        mu = ((alpha_now + np.exp(beta_temp_now * seatemp + ph * beta_ph_now)
-               + beta_omega_now * omega) * clean_term)
-        mgca[:, i] = np.random.normal(mu, sigma_now)
+    clean_term = (1 - beta_clean * cleaning[:, np.newaxis])
+    mu = ((alpha + np.exp(beta_temp * seatemp[:, np.newaxis] + beta_ph * ph[:, np.newaxis])
+           + beta_omega * omega[:, np.newaxis]) * clean_term)
+    mgca = np.random.normal(mu, sigma)
 
     out = MgCaPrediction(ensemble=mgca, spp=spp)
 
