@@ -6,7 +6,7 @@
 
 * Updated model parameters and removed pH term from `predict_mgca` (Issue #5).
 
-* Vectorize `predict_mgca`.
+* Vectorize `predict_mgca`, should be faster.
 
 
 ## Bug fixes
