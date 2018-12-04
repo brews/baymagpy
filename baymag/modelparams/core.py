@@ -5,6 +5,7 @@ from baymag.utils import get_csv_resource, get_matlab_resource
 
 
 POOLEDANNTRACE_PATH = path.join('modelparams', 'tracedumps', 'pooledann.csv')
+POOLEDSEASTRACE_PATH = path.join('modelparams', 'tracedumps', 'pooledsea.csv')
 HIERANNTRACE_PATH = path.join('modelparams', 'tracedumps', 'hierann.csv')
 HIERSEASTRACE_PATH = path.join('modelparams', 'tracedumps', 'hiersea.csv')
 MGSW_POST = get_matlab_resource(path.join('modelparams', 'mgsw_posterior.mat'),
@@ -90,11 +91,11 @@ class DrawDispenser:
 
         # For legacy, we're converting new foram species/subspecies to old,
         # short-hand names.
-        foram_map = {'G. bulloides' : 'bulloides',
-                     'N. pachyderma sinistral' : 'pachy_s',
-                     'G. ruber pink' : 'ruber_p',
-                     'G. ruber white' : 'ruber_w',
-                     'G. sacculifer' : 'sacculifer',
+        foram_map = {'G. bulloides': 'bulloides',
+                     'N. pachyderma sinistral': 'pachy_s',
+                     'G. ruber pink': 'ruber_p',
+                     'G. ruber white': 'ruber_w',
+                     'G. sacculifer': 'sacculifer',
                      }
         new_name = foram_map.get(foram)
         if new_name is not None:
@@ -104,31 +105,29 @@ class DrawDispenser:
             trace = self.pooled_annual
             alpha = trace.grab('alpha')
             beta_temp = trace.grab('beta_temp')
-            beta_ph = trace.grab('beta_ph')
             beta_omega = trace.grab('beta_omega')
             beta_clean = trace.grab('beta_clean')
             sigma = trace.grab('sigma')
 
         else:
-            if seasonal_seatemp == False:
-                trace = self.hier_annual
-            elif seasonal_seatemp == True:
+            if seasonal_seatemp == True:
                 trace = self.hier_seasonal
+            else:
+                trace = self.hier_annual
 
             alpha = trace.grab('alpha', foram)
             beta_temp = trace.grab('beta_temp', foram)
-            beta_ph = trace.grab('beta_ph')
             beta_omega = trace.grab('beta_omega', foram)
             beta_clean = trace.grab('beta_clean')
             sigma = trace.grab('sigma', foram)
 
-        return alpha, beta_temp, beta_ph, beta_omega, beta_clean, sigma
+        return alpha, beta_temp, beta_omega, beta_clean, sigma
 
 
 def get_sw_draws():
     """Return copy of arrays for Deep Time Mg/Ca seawater correction.
     """
-    return np.array(MGSW_POST['beta_draws'][:,::2][:, :1500])
+    return np.array(MGSW_POST['beta_draws'][:, ::2][:, :1500])
 
 
 # Preloading these resources so only need to load once on bayfox import.

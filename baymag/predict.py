@@ -52,7 +52,7 @@ class MgCaPrediction(Prediction):
 
 
 def predict_mgca(seatemp, cleaning, spp, latlon, depth, sw_age=None,
-                 seasonal_seatemp=False, ph=None, omega=None,
+                 seasonal_seatemp=False, omega=None,
                  distance_threshold=2000, drawsfun=get_draws):
     """Predict Mg/Ca from sea temperature
 
@@ -79,8 +79,6 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, sw_age=None,
     seasonal_seatemp : bool, optional
         Indicates whether sea-surface temperature is annual or seasonal
         estimate. If ``True``, ``spp`` must be specified.
-    ph : float or None, optional
-        Optional sea water pH. Estimated from sea surface if ``None``.
     omega : float or None, optional
         Optional sea water omega. Estimated from sea water at sample depth if
         ``None``.
@@ -101,19 +99,15 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, sw_age=None,
     if omega is None:
         _, _, omega = carbion(latlon, depth=depth, distance_threshold=distance_threshold)
 
-    if ph is None:
-        ph, _, _ = carbion(latlon, depth=0, distance_threshold=distance_threshold)
-
     # Standardize pH and omega for model.
-    ph -= 8
     omega = 1 / omega
-    ph, omega = np.atleast_1d(ph, omega)
+    omega = np.atleast_1d(omega)
 
-    alpha, beta_temp, beta_ph, beta_omega, beta_clean, sigma = drawsfun(spp, seasonal_seatemp)
+    alpha, beta_temp, beta_omega, beta_clean, sigma = drawsfun(spp, seasonal_seatemp)
 
     clean_term = (1 - beta_clean * cleaning[:, np.newaxis])
-    mu = ((alpha + np.exp(beta_temp * seatemp[:, np.newaxis] + beta_ph * ph[:, np.newaxis])
-           + beta_omega * omega[:, np.newaxis]) * clean_term)
+    mu = ((alpha + np.exp(beta_temp * seatemp[:, np.newaxis]) + beta_omega
+           * omega[:, np.newaxis]) * clean_term)
     mgca = np.random.normal(mu, sigma)
 
     out = MgCaPrediction(ensemble=mgca, spp=spp)

@@ -3,6 +3,9 @@
 ## Enhancements
 
 * Add Mg/Ca seawater correction to `predict_mgca` with `sw_age` arg for Deep Time prediction (Issue #3).
+
+* Updated model parameters and removed pH term from `predict_mgca` (Issue #5).
+
 * Vectorize `predict_mgca`.
 
 
