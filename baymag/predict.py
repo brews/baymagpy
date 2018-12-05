@@ -1,7 +1,7 @@
 import attr
 import numpy as np
 
-from baymag.omega import carbion
+from baymag.omega import omgph
 from baymag.modelparams import get_draws
 from baymag.modelparams import get_sw_draws
 
@@ -52,8 +52,7 @@ class MgCaPrediction(Prediction):
 
 
 def predict_mgca(seatemp, cleaning, spp, latlon, depth, sw_age=None,
-                 seasonal_seatemp=False, omega=None,
-                 distance_threshold=2000, drawsfun=get_draws):
+                 seasonal_seatemp=False, omega=None, drawsfun=get_draws):
     """Predict Mg/Ca from sea temperature
 
     Parameters
@@ -82,8 +81,6 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, sw_age=None,
     omega : float or None, optional
         Optional sea water omega. Estimated from sea water at sample depth if
         ``None``.
-    distance_threshold : int, optional
-        Furthest distance (km) to look for gridded data nearest to `latlon`.
     drawsfun : function-like, optional
         For debugging and testing. Object to be called to get MCMC model
         parameter draws. Don't mess with this.
@@ -97,7 +94,7 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, sw_age=None,
     assert depth >= 0, 'sample `depth` should be positive'
 
     if omega is None:
-        _, _, omega = carbion(latlon, depth=depth, distance_threshold=distance_threshold)
+        omega = omgph(latlon, depth=depth)
 
     # Standardize pH and omega for model.
     omega = 1 / omega
@@ -144,12 +141,9 @@ def sw_correction(mgcaprediction, age, drawsfun=None):
 
     age = np.asanyarray(age)
     mgsw = 1 / (beta_draws[0] * age[:, np.newaxis] + beta_draws[1])
-    # mgsw=1./(age*beta_sw(1,:) + ones(Nobs,1)*beta_sw(2,:));
 
     # ratio to modern value
-    # TODO(brews): Assume that top value is modern and we have more than one value?
     mgsw /= mgsw[0]
-    # mgsw=mgsw./repmat(mgsw(1,:),Nobs,1);
 
     out = MgCaPrediction(ensemble=np.array(mgcaprediction.ensemble * mgsw),
                          spp=str(mgcaprediction.spp))

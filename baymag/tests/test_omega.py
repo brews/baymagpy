@@ -6,53 +6,26 @@ import baymag.omega
 
 def test_get_omega():
     """General get_omega test case"""
-    goal = 1.112018219432555
+    goal = 1.0978
     latlon = (17.3, -48.4)
     depth = 3975
-    _, _, victim = baymag.omega.carbion(latlon=latlon, depth=depth)
-    np.testing.assert_allclose(victim, goal, atol=1e-3, rtol=0)
-
-
-def test_get_omega_scs():
-    """Test for site in South China Sea"""
-    goal = 1.209596401825736
-    latlon = (15.463, 114.398)
-    depth = 1446
-    _, _, victim = baymag.omega.carbion(latlon=latlon, depth=depth)
+    victim = baymag.omega.core.omgph(latlon=latlon, depth=depth)
     np.testing.assert_allclose(victim, goal, atol=1e-3, rtol=0)
 
 
 def test_get_omega_caribbean():
     """Test ofr site in Caribbean"""
-    goal = 1.620837849676754
+    goal = 1.5313
     latlon = (20.42, -80.14)
     depth = 2330
-    _, _, victim = baymag.omega.carbion(latlon=latlon, depth=depth)
-    np.testing.assert_allclose(victim, goal, atol=1e-3, rtol=0)
-
-
-def test_get_omega_mediterranean():
-    """Test ofr site in Mediterranean"""
-    goal = 3.247495785049527
-    latlon = (34.53, 17.98)
-    depth = 3402
-    _, _, victim = baymag.omega.carbion(latlon=latlon, depth=depth)
+    victim = baymag.omega.omgph(latlon=latlon, depth=depth)
     np.testing.assert_allclose(victim, goal, atol=1e-3, rtol=0)
 
 
 def test_get_omega_gom():
     """Test from site in Gulf of Mexico"""
-    goal = 1.810377376823078
+    goal = 1.8104
     latlon = (23.2, -90.0)
     depth = 599
-    _, _, victim = baymag.omega.carbion(latlon=latlon, depth=depth)
-    np.testing.assert_allclose(victim, goal, atol=1e-3, rtol=0)
-
-
-def test_get_omega_arctic():
-    """Test from site in Arctic"""
-    goal = 1.205628075781792
-    latlon = (67.9, -4.0)
-    depth = 3676
-    _, _, victim = baymag.omega.carbion(latlon=latlon, depth=depth)
+    victim = baymag.omega.omgph(latlon=latlon, depth=depth)
     np.testing.assert_allclose(victim, goal, atol=1e-3, rtol=0)
