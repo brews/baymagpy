@@ -85,7 +85,6 @@ def omgph(latlon, depth):
                                   omega_field[(nlon - 20):nlon, ...],
                                   omega_field[:(int(nlon / 2) - 20), ...]])
 
-
     # manually cute westernmost caribbean
     lat_carib = lat_f[102:108]
     omega_carib = omega_field[107, 102:108, :].squeeze()
@@ -98,7 +97,7 @@ def omgph(latlon, depth):
     n_lat = len(lat_f)
     n_depth = len(wdepth)
 
-    omega_vec = omega_field.reshape((n_lon * n_lat, n_depth), order ='F')
+    omega_vec = omega_field.reshape((n_lon * n_lat, n_depth), order='F')
 
     locs_obs_omega = []
     omega_obs = []
@@ -118,7 +117,6 @@ def omgph(latlon, depth):
     max_dist = 700
 
     # Jess' loop to get data
-    tloc = latlon
     if gulf_mexico.contains(target_location):
         gom_d_mat = get_matlab_resource('omega/observations/gom.mat')
         gom_d = xr.Dataset({'omega': (['depth'], gom_d_mat['omega'].ravel())},

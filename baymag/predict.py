@@ -96,7 +96,7 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, sw_age=None,
     if omega is None:
         omega = omgph(latlon, depth=depth)
 
-    # Standardize pH and omega for model.
+    # Invert omega for model.
     omega = 1 / omega
     omega = np.atleast_1d(omega)
 
