@@ -9,7 +9,7 @@ This reduces package size and drops some heavy dependencies.
 
 * Updated model parameters and removed pH term from `predict_mgca` (Issue #5).
 
-* Vectorize `predict_mgca`, should be faster and we are more sure about model design.
+* Vectorize `predict_mgca`, should be faster.
 
 
 # v0.0.1a1
