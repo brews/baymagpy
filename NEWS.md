@@ -1,9 +1,11 @@
 # v0.0.1a3
 
-## Enhancements
-
-
 ## Bug fixes
+
+* Clean up docstring and argument logic for `predict_mgca`. There are changes to the arg order for `predict_mgca`. 
+    It is now `seatemp`, `cleaning`, `spp`, `seasonal_seatemp`, `omega`, `latlon`, `depth`, `sw_age`, and `drawsfun`. 
+    The `latlon` and `depth` args are now optional when `omega` is given. 
+    `spp` is now optional as well, defaulting to None. (Issue #6)
 
 
 # v0.0.1a2

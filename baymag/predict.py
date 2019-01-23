@@ -51,8 +51,9 @@ class MgCaPrediction(Prediction):
     pass
 
 
-def predict_mgca(seatemp, cleaning, spp, latlon, depth, sw_age=None,
-                 seasonal_seatemp=False, omega=None, drawsfun=get_draws):
+def predict_mgca(seatemp, cleaning, spp=None, seasonal_seatemp=False,
+                 omega=None, latlon=None, depth=None, sw_age=None,
+                 drawsfun=get_draws):
     """Predict Mg/Ca from sea temperature
 
     Parameters
@@ -63,24 +64,28 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, sw_age=None,
     cleaning : ndarray
         Binary n-length array indicating the cleaning method used for the
         inferred Mg/Ca series. ``1`` for reductive, ``0`` for BCP (Barker).
-    spp : str
-        Foraminifera species of the inferred Mg/Ca series.
-    latlon : tuple of floats
-        Latitude and longitude of site. Latitude must be between -90 and 90.
-        Longitude between -180 and 180.
-    depth : float
-        Water depth (m). Increasing values indicate increasing depth below sea
-        level.
+    spp : str or None, optional
+        Foraminifera species of the inferred Mg/Ca series, using hierarchical
+        calibration model parameters. Default is None, which uses pooled
+        calibration model parameters.
+    seasonal_seatemp : bool, optional
+        Indicates whether sea-surface temperature is annual or seasonal
+        estimate. If True, ``spp`` must be specified. Default is False.
+    omega : float or None, optional
+        Optional sea water omega. Estimated from modern seawater at sample
+        ``depth`` and ``latlon`` if None. Default is None.
+    latlon : tuple of floats or None, optional
+        Latitude and longitude of site. Used to find sample omega. Latitude
+        must be between -90 and 90. Longitude between -180 and 180. Must be
+        given if ``omega`` is None. Default is None.
+    depth : float or None, optional
+        Sample waterdepth (m). Increasing values indicate increasing depth below sea
+        level. Used to find sample omega. Required arg if ``omega`` not given.
+        Default is None.
     sw_age : ndarray or None, optional
         Optional n-length sequence indicating the age of values in ``seatemp``
         to apply Mg/Ca correction for Deep Time seawater. Units must be Ma.
         Default argument ``None`` does not apply Mg/Ca seawater correction.
-    seasonal_seatemp : bool, optional
-        Indicates whether sea-surface temperature is annual or seasonal
-        estimate. If ``True``, ``spp`` must be specified.
-    omega : float or None, optional
-        Optional sea water omega. Estimated from sea water at sample depth if
-        ``None``.
     drawsfun : function-like, optional
         For debugging and testing. Object to be called to get MCMC model
         parameter draws. Don't mess with this.
@@ -91,9 +96,10 @@ def predict_mgca(seatemp, cleaning, spp, latlon, depth, sw_age=None,
     """
     seatemp = np.atleast_1d(seatemp)
     cleaning = np.atleast_1d(cleaning)
-    assert depth >= 0, 'sample `depth` should be positive'
 
     if omega is None:
+        assert (depth is not None) and (latlon is not None), '`depth` and `latlon` need to be given when `omega` is None'
+        assert depth >= 0, 'sample `depth` should be positive'
         omega = omgph(latlon, depth=depth)
 
     # Invert omega for model.
