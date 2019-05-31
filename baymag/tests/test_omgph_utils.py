@@ -2,7 +2,7 @@ import pytest
 import xarray as xr
 import numpy as np
 
-from baymag.omega.core import chord_distance
+from baymag.omgph.core import chord_distance
 
 
 @pytest.fixture

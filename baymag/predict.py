@@ -1,7 +1,7 @@
 import attr
 import numpy as np
 
-from baymag.omega import omgph
+from baymag.omgph import fetch_omega
 from baymag.modelparams import get_draws
 from baymag.modelparams import get_sw_draws
 
@@ -100,7 +100,7 @@ def predict_mgca(seatemp, cleaning, spp=None, seasonal_seatemp=False,
     if omega is None:
         assert (depth is not None) and (latlon is not None), '`depth` and `latlon` need to be given when `omega` is None'
         assert depth >= 0, 'sample `depth` should be positive'
-        omega = omgph(latlon, depth=depth)
+        omega = fetch_omega(latlon, depth=depth)
 
     # Invert omega for model.
     omega = 1 / omega

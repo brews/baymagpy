@@ -40,6 +40,6 @@ setup(
     tests_require=['pytest'],
     package_data={'baymag': ['modelparams/tracedumps/*.csv',
                              'modelparams/mgsw_posterior.mat',
-                             'omega/observations/*.nc',
-                             'omega/observations/*.mat']},
+                             'omgph/observations/*.nc',
+                             'omgph/observations/*.mat']},
 )

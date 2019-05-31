@@ -52,7 +52,85 @@ def chord_distance(latlon1, latlon2):
     return dists.reshape(m, n)
 
 
-def omgph(latlon, depth):
+
+def fetch_ph(latlon):
+    """Fetch modern seawater surface insitu pH mean and std
+
+    Parameters
+    ----------
+    latlon : tuple of floats
+        Latitude and longitude of site. Latitude must be between -90 and 90.
+        Longitude between -180 and 180.
+
+    Returns
+    -------
+    ph : float
+        In-situ pH.
+    """
+    # Very literal version of Jess Tierney's `omgph` for MATLAB. I'm so sorry.
+    ph_ds = get_netcdf_resource('omgph/observations/GLODAPv2.2016b.pHtsinsitutp_subset.nc')[
+        ['pHtsinsitutp', 'pHtsinsitutp_error', 'lat', 'lon']]
+
+    lat_f = ph_ds.lat.values
+    lon_f = ph_ds.lon.values
+    ph_field = ph_ds.pHtsinsitutp.values.T
+
+    nlon = len(lon_f)
+
+    lon_f = np.concatenate([lon_f[(int(nlon / 2) - 20):(nlon - 20)] - 360,
+                            lon_f[(nlon - 20):nlon] - 360,
+                            lon_f[:(int(nlon / 2) - 20)]])
+    ph_field = np.concatenate([ph_field[(int(nlon / 2) - 20):(nlon - 20), ...],
+                               ph_field[(nlon - 20):nlon, ...],
+                               ph_field[:(int(nlon / 2) - 20), ...]])
+
+    # manually cut westernmost caribbean so sites to the west of it
+    # get assigned appropriately.
+    lat_carib = lat_f[102:108]
+    ph_carib = ph_field[107, 102:108]
+
+    a, b = np.meshgrid(lon_f, lat_f)
+    c = np.concatenate((a.T, b.T), axis=1)
+    locs = c.reshape((int(np.multiply(*c.shape) / 2), 2), order='F')
+
+    n_lon = len(lon_f)
+    n_lat = len(lat_f)
+
+    ph_vec = ph_field.reshape((n_lon * n_lat), order='F')
+
+    locs_obs_ph = locs[~np.isnan(ph_vec)]
+    ph_obs = ph_vec[~np.isnan(ph_vec)]
+
+    # Polygons - to check whether our site falls in these areas
+    gulf_mexico = shapely.geometry.Polygon([(-96.5, 16.5), (-100.3, 30.5),
+                                            (-82, 30.5), (-80.5, 23)])
+    caribbean = shapely.geometry.Polygon([(-77.5, 8), (-90.8, 18.6),
+                                          (-82.4, 22.9), (-61.5, 17.5),
+                                          (-61.5, 8.8)])
+    target_location = shapely.geometry.Point(latlon[::-1])
+    max_dist = 700
+
+    # Jess' loop to get data
+    if gulf_mexico.contains(target_location):
+        gom_d_mat = get_matlab_resource('omgph/observations/gom.mat')
+        gom_d = xr.Dataset({'ph': (['depth'], gom_d_mat['ph'].ravel())},
+                           coords={'depth': (['depth'], gom_d_mat['depth'].ravel())})
+        ph = gom_d['ph'].sel(depth=0, method='nearest').values
+    elif caribbean.contains(target_location):
+        lat1 = np.argmin(np.abs(latlon[0] - lat_carib))
+        ph = ph_carib[lat1]
+    else:
+        # Closest location
+        dists = chord_distance(latlon, locs_obs_ph[:, ::-1])
+        dmin = np.min(dists)
+        imin = np.argmin(dists)
+        ph = ph_obs[imin]
+        # We don't return these but in case they're needed for debug:
+        dists_ph = dmin
+    return ph
+
+
+def fetch_omega(latlon, depth):
     """Calculate modern in situ calcite saturation state (omega) for a location.
 
     Parameters
@@ -65,12 +143,11 @@ def omgph(latlon, depth):
 
     Returns
     -------
-    omega : float
+    omega : flomgphoat
       Calcite saturation state calculated at in situ temperature and pressure.
     """
-
-    # Very literal version of Jess Tierney's `omgph` for MATLAB. I'm so sorry.
-    omg_d = get_netcdf_resource('omega/observations/GLODAPv2.2016b.OmegaC_subset.nc')[['OmegaC', 'Depth']]
+    # Very literal version of Jess Tierney's `fetch_omega` for MATLAB. I'm so sorry.
+    omg_d = get_netcdf_resource('omgph/observations/GLODAPv2.2016b.OmegaC_subset.nc')[['OmegaC', 'Depth']]
     lat_f = omg_d.lat.values
     lon_f = omg_d.lon.values
     wdepth = omg_d.Depth.values
@@ -118,7 +195,7 @@ def omgph(latlon, depth):
 
     # Jess' loop to get data
     if gulf_mexico.contains(target_location):
-        gom_d_mat = get_matlab_resource('omega/observations/gom.mat')
+        gom_d_mat = get_matlab_resource('omgph/observations/gom.mat')
         gom_d = xr.Dataset({'omega': (['depth'], gom_d_mat['omega'].ravel())},
                            coords={'depth': (['depth'], gom_d_mat['depth'].ravel())})
         omega = gom_d['omega'].sel(depth=depth, method='nearest').values

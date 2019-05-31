@@ -18,7 +18,7 @@
 
 * Add Mg/Ca seawater correction to `predict_mgca` with `sw_age` arg for Deep Time prediction (Issue #3).
 
-* Replace internal `carbion` code with port of `omgph` from upstream MATLAB (Issue #4). 
+* Replace internal `carbion` code with port of `fetch_omega` from upstream MATLAB (Issue #4). 
 This reduces package size and drops some heavy dependencies.
 
 * Updated model parameters and removed pH term from `predict_mgca` (Issue #5).
