@@ -105,7 +105,7 @@ def predict_mgca(seatemp, cleaning, spp=None, seasonal_seatemp=False,
     cleaning = np.atleast_1d(cleaning)
 
     if omega is None:
-        assert (depth is not None) and (latlon is not None), '`depth` and `latlon` need to be given when `omega` is None'
+        assert (depth is not None) and (latlon is not None), '`depth` and `latlon` needed when `omega` is None'
         assert depth >= 0, 'sample `depth` should be positive'
         omega = fetch_omega(latlon, depth=depth)
 
