@@ -1,3 +1,10 @@
+"""Code to grab dumped MCMC parameter posterior trace draws.
+"""
+
+
+__all__ = ['get_draws', 'get_sw_draws']
+
+
 from os import path
 import numpy as np
 

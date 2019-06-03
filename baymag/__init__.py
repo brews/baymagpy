@@ -1,2 +1,2 @@
-from baymag.predict import predict_mgca
-from baymag.plot import predictplot, densityplot
+from baymag.predict import *
+from baymag.plot import *

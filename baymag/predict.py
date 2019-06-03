@@ -1,3 +1,10 @@
+"""Code to make ``baymag`` predictions.
+"""
+
+
+__all__ = ['predict_mgca', 'sw_correction']
+
+
 import attr
 import numpy as np
 

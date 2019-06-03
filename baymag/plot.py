@@ -1,3 +1,10 @@
+"""Various functions to plot baymag.predict.Predictions.
+"""
+
+
+__all__ = ['predictplot', 'densityplot']
+
+
 import matplotlib.pyplot as plt
 
 

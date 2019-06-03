@@ -1,8 +1,10 @@
 # v0.0.1a4
 
-## Bug fixes
-
 ## Enhancements
+
+* Clean up public API and docstrings.
+
+## Bug fixes
 
 
 # v0.0.1a3

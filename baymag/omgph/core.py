@@ -1,3 +1,10 @@
+"""Core functions to fetch modern seawater pH and omega values.
+"""
+
+
+__all__ = ['fetch_ph', 'fetch_omega']
+
+
 import shapely.geometry
 import xarray as xr
 import numpy as np
