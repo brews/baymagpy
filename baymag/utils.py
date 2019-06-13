@@ -1,7 +1,6 @@
 from pkgutil import get_data
 from io import BytesIO
 from scipy.io import loadmat
-import numpy as np
 import xarray as xr
 import netCDF4
 
