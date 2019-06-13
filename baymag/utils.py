@@ -20,11 +20,3 @@ def get_netcdf_resource(resource, package='baymag', **kwargs):
         store = xr.backends.NetCDF4DataStore(nc4_ds)
         data = xr.open_dataset(store, **kwargs)
     return data
-
-
-def get_csv_resource(resource, package='baymag'):
-    """Read flat CSV files as package resources"""
-    with BytesIO(get_data(package, resource)) as fl:
-        data = np.genfromtxt(fl, delimiter=',', names=True, deletechars='',
-                             replace_space=' ')
-    return data

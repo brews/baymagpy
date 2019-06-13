@@ -38,8 +38,7 @@ setup(
     install_requires=['numpy', 'attrs', 'xarray', 'pandas', 'matplotlib',
                       'scipy', 'netcdf4', 'shapely'],
     tests_require=['pytest'],
-    package_data={'baymag': ['modelparams/tracedumps/*.csv',
-                             'modelparams/mgsw_posterior.mat',
+    package_data={'baymag': ['modelparams/*.mat',
                              'omgph/observations/*.nc',
                              'omgph/observations/*.mat']},
 )

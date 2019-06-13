@@ -12,18 +12,18 @@ def test_percentile():
 
 
 def test_predict_mgca():
-    # TODO(brews): This is a very very rough integration test. Should do proper
-    # test taking advantage of the `drawsfun` args.
     np.random.seed(123)
     victim = baymag.predict.predict_mgca(seatemp=np.array([10, 20, 30]),
                                          cleaning=np.array([1] * 3),
-                                         spp='ruber_w',
-                                         latlon=(17.3, -48.4),
-                                         depth=3975)
-    goal_median = np.array([1.7, 2.8, 4.5])
+                                         spp='ruber',
+                                         salinity=35.0,
+                                         ph=8.1,
+                                         omega=0.85,
+                                         )
+    goal_median = np.array([1.2, 2.2, 4.0])
     np.testing.assert_allclose(np.round(np.median(victim.ensemble, axis=1), 1),
                                np.round(goal_median, 1),
-                               atol=1e-1)
+                               atol=1e-4)
 
 
 def test_sw_correction():
@@ -38,15 +38,16 @@ def test_sw_correction():
 
 def test_predict_mgca_deeptime():
     """Integration test for sw_correction with predict_mgca"""
-    # TODO(brews): This is a very very rough integration test. Should do proper
-    # test taking advantage of the `drawsfun` args.
     np.random.seed(123)
     victim = baymag.predict.predict_mgca(seatemp=np.array([10, 20, 30]),
                                          cleaning=np.array([1] * 3),
-                                         spp='ruber_w',
-                                         latlon=(17.3, -48.4),
-                                         depth=3975, sw_age=[1, 2, 3])
-    goal_median = np.array([1.8, 2.6, 4.1])
-    np.testing.assert_allclose(np.round(np.median(victim.ensemble, axis=1), 1),
-                               np.round(goal_median, 1),
-                               atol=1e-1)
+                                         spp='ruber',
+                                         salinity=35.0,
+                                         ph=8.1,
+                                         omega=0.85,
+                                         sw_age=[1, 2, 3],
+                                         )
+    goal_median = np.array([1.150744, 2.071804, 3.693468])
+    np.testing.assert_allclose(np.median(victim.ensemble, axis=1),
+                               goal_median,
+                               atol=1e-4)

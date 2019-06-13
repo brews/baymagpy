@@ -8,7 +8,7 @@ __all__ = ['predict_mgca', 'sw_correction']
 import attr
 import numpy as np
 
-from baymag.omgph import fetch_omega
+from baymag.omgph import fetch_omega, fetch_ph
 from baymag.modelparams import get_draws
 from baymag.modelparams import get_sw_draws
 
@@ -58,9 +58,8 @@ class MgCaPrediction(Prediction):
     pass
 
 
-def predict_mgca(seatemp, cleaning, spp=None, seasonal_seatemp=False,
-                 omega=None, latlon=None, depth=None, sw_age=None,
-                 drawsfun=get_draws):
+def predict_mgca(seatemp, cleaning, salinity, spp, ph=None, omega=None, latlon=None,
+                 depth=None, sw_age=None, drawsfun=get_draws):
     """Predict Mg/Ca from sea temperature
 
     Parameters
@@ -71,13 +70,15 @@ def predict_mgca(seatemp, cleaning, spp=None, seasonal_seatemp=False,
     cleaning : ndarray
         Binary n-length array indicating the cleaning method used for the
         inferred Mg/Ca series. ``1`` for reductive, ``0`` for BCP (Barker).
-    spp : str or None, optional
+    salinity : ndarray
+        Sea water salinity (PSU).
+    spp : str or None
         Foraminifera species of the inferred Mg/Ca series, using hierarchical
         calibration model parameters. Default is None, which uses pooled
         calibration model parameters.
-    seasonal_seatemp : bool, optional
-        Indicates whether sea-surface temperature is annual or seasonal
-        estimate. If True, ``spp`` must be specified. Default is False.
+    ph : float or None, optional
+        Optional sea water pH. Estimated from modern seawater at sample and
+        ``latlon`` if None. Default is None.
     omega : float or None, optional
         Optional sea water omega. Estimated from modern seawater at sample
         ``depth`` and ``latlon`` if None. Default is None.
@@ -103,6 +104,7 @@ def predict_mgca(seatemp, cleaning, spp=None, seasonal_seatemp=False,
     """
     seatemp = np.atleast_1d(seatemp)
     cleaning = np.atleast_1d(cleaning)
+    salinity = np.atleast_1d(salinity)
 
     if omega is None:
         assert (depth is not None) and (latlon is not None), '`depth` and `latlon` needed when `omega` is None'
@@ -110,15 +112,23 @@ def predict_mgca(seatemp, cleaning, spp=None, seasonal_seatemp=False,
         omega = fetch_omega(latlon, depth=depth)
 
     # Invert omega for model.
-    omega = 1 / omega
+    omega = omega ** -2
     omega = np.atleast_1d(omega)
 
-    alpha, beta_temp, beta_omega, beta_clean, sigma = drawsfun(spp, seasonal_seatemp)
+    if ph is None:
+        assert latlon is not None, '`latlon` needed when `ph` is None'
+        ph = fetch_ph(latlon)
+
+    ph = np.atleast_1d(ph)
+
+    alpha, beta_temp, beta_salinity, beta_omega, beta_ph, beta_clean, sigma = drawsfun(spp)
 
     clean_term = (1 - beta_clean * cleaning[:, np.newaxis])
-    mu = ((alpha + np.exp(beta_temp * seatemp[:, np.newaxis]) + beta_omega
-           * omega[:, np.newaxis]) * clean_term)
-    mgca = np.random.normal(mu, sigma)
+    mu = (alpha + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
+          + beta_salinity * salinity[:, np.newaxis] + clean_term)
+    if spp != 'pachy':
+        mu += beta_ph * ph
+    mgca = np.exp(np.random.normal(mu, sigma))
 
     out = MgCaPrediction(ensemble=mgca, spp=spp)
 

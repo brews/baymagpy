@@ -2,6 +2,7 @@
 
 ## Enhancements
 
+* Update model design and parameter draws to match latest (as of May 2019) upstream development (Issue #8).
 * Clean up public API and docstrings.
 
 ## Bug fixes
