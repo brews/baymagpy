@@ -35,7 +35,7 @@ setup(
 
     packages=find_packages(exclude=['docs']),
 
-    install_requires=['numpy', 'attrs', 'xarray', 'pandas', 'matplotlib',
+    install_requires=['numpy', 'attrs', 'xarray', 'matplotlib',
                       'scipy', 'netcdf4', 'shapely'],
     tests_require=['pytest'],
     package_data={'baymag': ['modelparams/*.mat',

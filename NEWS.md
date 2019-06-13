@@ -10,6 +10,8 @@
 
 * Clean public API and docstrings.
 
+* Removed `pandas` dependency.
+
 
 # v0.0.1a3
 
