@@ -2,10 +2,13 @@
 
 ## Enhancements
 
-* Update model design and parameter draws to match latest (as of May 2019) upstream development (Issue #8).
-* Clean up public API and docstrings.
+* Completely broken backwards compatibility.
 
-## Bug fixes
+* Update model design and parameter draws to match latest (as of May 2019) upstream development (Issue #8).
+
+* Seawater correction and fetching modern seawater pH and omega have been moved outside of `baymag.predict_mgca()`. This now needs to be done independently using `baymag.sw_correction()`, `baymag.fetch_omega()`, and `baymag.fetch_ph()`. As a result, `predict_mgca()` has a greatly simplified signature.
+
+* Clean public API and docstrings.
 
 
 # v0.0.1a3

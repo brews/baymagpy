@@ -34,20 +34,3 @@ def test_sw_correction():
                                                                     [0.5, 1, 2]]))
     goal = np.array([[1., 1., 1.], [0.6, 0.6, 0.625]])
     np.testing.assert_allclose(test2.ensemble, goal, atol=1e-10)
-
-
-def test_predict_mgca_deeptime():
-    """Integration test for sw_correction with predict_mgca"""
-    np.random.seed(123)
-    victim = baymag.predict.predict_mgca(seatemp=np.array([10, 20, 30]),
-                                         cleaning=np.array([1] * 3),
-                                         spp='ruber',
-                                         salinity=35.0,
-                                         ph=8.1,
-                                         omega=0.85,
-                                         sw_age=[1, 2, 3],
-                                         )
-    goal_median = np.array([1.150744, 2.071804, 3.693468])
-    np.testing.assert_allclose(np.median(victim.ensemble, axis=1),
-                               goal_median,
-                               atol=1e-4)

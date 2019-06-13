@@ -8,7 +8,6 @@ __all__ = ['predict_mgca', 'sw_correction']
 import attr
 import numpy as np
 
-from baymag.omgph import fetch_omega, fetch_ph
 from baymag.modelparams import get_draws
 from baymag.modelparams import get_sw_draws
 
@@ -58,8 +57,7 @@ class MgCaPrediction(Prediction):
     pass
 
 
-def predict_mgca(seatemp, cleaning, salinity, spp, ph=None, omega=None, latlon=None,
-                 depth=None, sw_age=None, drawsfun=get_draws):
+def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws):
     """Predict Mg/Ca from sea temperature
 
     Parameters
@@ -70,30 +68,20 @@ def predict_mgca(seatemp, cleaning, salinity, spp, ph=None, omega=None, latlon=N
     cleaning : ndarray
         Binary n-length array indicating the cleaning method used for the
         inferred Mg/Ca series. ``1`` for reductive, ``0`` for BCP (Barker).
-    salinity : ndarray
+    salinity : scalar or ndarray
         Sea water salinity (PSU).
-    spp : str or None
-        Foraminifera species of the inferred Mg/Ca series, using hierarchical
-        calibration model parameters. Default is None, which uses pooled
-        calibration model parameters.
-    ph : float or None, optional
-        Optional sea water pH. Estimated from modern seawater at sample and
-        ``latlon`` if None. Default is None.
-    omega : float or None, optional
-        Optional sea water omega. Estimated from modern seawater at sample
-        ``depth`` and ``latlon`` if None. Default is None.
-    latlon : tuple of floats or None, optional
-        Latitude and longitude of site. Used to find sample omega. Latitude
-        must be between -90 and 90. Longitude between -180 and 180. Must be
-        given if ``omega`` is None. Default is None.
-    depth : float or None, optional
-        Sample waterdepth (m). Increasing values indicate increasing depth below sea
-        level. Used to find sample omega. Required arg if ``omega`` not given.
-        Default is None.
-    sw_age : ndarray or None, optional
-        Optional n-length sequence indicating the age of values in ``seatemp``
-        to apply Mg/Ca correction for Deep Time seawater. Units must be Ma.
-        Default argument ``None`` does not apply Mg/Ca seawater correction.
+    ph : scalar or ndarray
+        Sea water pH.
+    omega : scalar or ndarray
+        Sea water calcite saturation state.
+    spp : str
+        Calibration model parameter options. Must be one of:
+        'all' : Pooled calibration using annual SSTs.
+        'all_sea' : Pooled calibration using seasonal SSTs.
+        'ruber' : Hierarchical calibration with G. ruber (white or pink).
+        'bulloides' : Hierarchical calibration with G. bulloides.
+        'sacculifer' : Hierarchical calibration with G. sacculifer.
+        'pachy' : Hierarchical calibration with N. pachyderma or N. incompta.
     drawsfun : function-like, optional
         For debugging and testing. Object to be called to get MCMC model
         parameter draws. Don't mess with this.
@@ -101,25 +89,21 @@ def predict_mgca(seatemp, cleaning, salinity, spp, ph=None, omega=None, latlon=N
     Returns
     -------
     out : MgCaPrediction
+
+    See Also
+    --------
+    fetch_omega : Calculate modern insitu calcite saturation state (omega)
+    fetch_ph : Fetch modern seawater surface insitu pH
+    sw_correction : Apply Deep-Time seawater correction to Mg/Ca predictions
     """
     seatemp = np.atleast_1d(seatemp)
     cleaning = np.atleast_1d(cleaning)
     salinity = np.atleast_1d(salinity)
-
-    if omega is None:
-        assert (depth is not None) and (latlon is not None), '`depth` and `latlon` needed when `omega` is None'
-        assert depth >= 0, 'sample `depth` should be positive'
-        omega = fetch_omega(latlon, depth=depth)
+    ph = np.atleast_1d(ph)
 
     # Invert omega for model.
     omega = omega ** -2
     omega = np.atleast_1d(omega)
-
-    if ph is None:
-        assert latlon is not None, '`latlon` needed when `ph` is None'
-        ph = fetch_ph(latlon)
-
-    ph = np.atleast_1d(ph)
 
     alpha, beta_temp, beta_salinity, beta_omega, beta_ph, beta_clean, sigma = drawsfun(spp)
 
@@ -132,14 +116,11 @@ def predict_mgca(seatemp, cleaning, salinity, spp, ph=None, omega=None, latlon=N
 
     out = MgCaPrediction(ensemble=mgca, spp=spp)
 
-    if sw_age is not None:
-        out = sw_correction(out, age=sw_age)
-
     return out
 
 
 def sw_correction(mgcaprediction, age, drawsfun=None):
-    """Apply Deep Time seawater correction to Mg/Ca prediction.
+    """Apply Deep-Time seawater correction to Mg/Ca prediction.
 
     Parameters
     ----------

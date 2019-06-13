@@ -60,7 +60,7 @@ def chord_distance(latlon1, latlon2):
 
 
 def fetch_ph(latlon):
-    """Fetch modern seawater surface insitu pH mean and std
+    """Fetch modern seawater surface insitu pH.
 
     Parameters
     ----------
