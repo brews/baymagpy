@@ -7,6 +7,7 @@ __all__ = ['predict_mgca', 'sw_correction']
 
 import attr
 import numpy as np
+from scipy.interpolate import interp1d
 
 from baymag.modelparams import get_draws
 from baymag.modelparams import get_sw_draws
@@ -126,12 +127,12 @@ def sw_correction(mgcaprediction, age, drawsfun=None):
     ----------
     mgcaprediction : baymag.predict.MgCaPrediction
     age : sequence-like
-        Age of predictions in ``prediction``. Must be in units Ma. n-length
-        sequence where n == prediction.ensemble.shape[0].
+        Age of predictions in ``prediction``, an n-length sequence where
+        n == prediction.ensemble.shape[0]. Must be in units Ma.
     drawsfun : None or function-like, optional
-        Optional function-like returning 2d array of MCMC parameter draws to
-        use for seawater correction. Used for testing and debugging only.
-        Default ``None`` uses ``baymag.modelparams.get_sw_draws()``.
+        Optional function-like returning 2 2d arrays (``xt``, ``mgsmooth``) of
+        MCMC parameter draws for seawater correction. Used for testing and
+        debugging only. Default ``None`` uses ``baymag.modelparams.get_sw_draws()``.
 
     Returns
     -------
@@ -139,15 +140,15 @@ def sw_correction(mgcaprediction, age, drawsfun=None):
         Copy of mgcaprediction with correction to ensemble.
     """
     if drawsfun is None:
-        beta_draws = get_sw_draws()
+        xt, mgsmooth = get_sw_draws()
     else:
-        beta_draws = drawsfun()
+        xt, mgsmooth = drawsfun()
 
     age = np.asanyarray(age)
-    mgsw = 1 / (beta_draws[0] * age[:, np.newaxis] + beta_draws[1])
+    mgsw = interp1d(xt, mgsmooth, axis=0)(age)
 
     # ratio to modern value
-    mgsw /= mgsw[0]
+    mgsw /= mgsmooth[0]
 
     out = MgCaPrediction(ensemble=np.array(mgcaprediction.ensemble * mgsw),
                          spp=str(mgcaprediction.spp))

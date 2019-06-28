@@ -10,8 +10,8 @@ import numpy as np
 from baymag.utils import get_matlab_resource
 
 
-MGSW_POST = get_matlab_resource(path.join('modelparams', 'mgsw_posterior.mat'),
-                                variable_names=['beta_draws'])
+MGSW_POST = get_matlab_resource(path.join('modelparams', 'mgsw_gaussian.mat'),
+                                squeeze_me=True)
 POOLED_PARAMS = get_matlab_resource(path.join('modelparams', 'pooled_model_params.mat'),
                                 squeeze_me=True)
 POOLEDSEA_PARAMS = get_matlab_resource(path.join('modelparams', 'pooled_sea_model_params.mat'),
@@ -21,9 +21,16 @@ SPP_PARAMS = get_matlab_resource(path.join('modelparams', 'species_model_params.
 
 
 def get_sw_draws():
-    """Return copy of arrays for Deep Time Mg/Ca seawater correction.
+    """Get copy of arrays for Deep Time Mg/Ca seawater correction.
+
+    Returns
+    -------
+    xt : ndarray
+    mgsmooth : ndarray
     """
-    return np.array(MGSW_POST['beta_draws'][:, ::2][:, :1000])
+    mgsmooth = np.array(MGSW_POST['mg_smooth']).copy()
+    xt = np.array(MGSW_POST['xt']).copy()
+    return xt, mgsmooth
 
 
 def get_draws(species):

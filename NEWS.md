@@ -1,8 +1,6 @@
-# v0.0.1a5
+# baymagpy v0.0.1a5
 
-## Enhancements
-
-## Bug fixes
+* Updated prediction model parameters and sea-water correction, matching upstream BAYMAG development.
 
 
 # v0.0.1a4
