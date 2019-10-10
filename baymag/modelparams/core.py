@@ -2,9 +2,9 @@
 """
 
 
-__all__ = ['get_draws', 'get_sw_draws']
+__all__ = ['get_draws', 'get_sw_draws','get_mgsw_smooth']
 
-
+from scipy.io import loadmat
 from os import path
 import numpy as np
 from baymag.utils import get_matlab_resource
@@ -18,13 +18,17 @@ POOLEDSEA_PARAMS = get_matlab_resource(path.join('modelparams', 'pooled_sea_mode
                                 squeeze_me=True)
 SPP_PARAMS = get_matlab_resource(path.join('modelparams', 'species_model_params.mat'),
                                 squeeze_me=True)
+MGSW_SMOOTH = get_matlab_resource(path.join('modelparams', 'mg_smooth.mat'))
 
+def get_mgsw_smooth():
+    '''return copy of arrays of model Mg/Ca for deep time Mg/Ca seawater correction
+    '''
+    return np.array(MGSW_SMOOTH['mg_smooth'])
 
 def get_sw_draws():
     """Return copy of arrays for Deep Time Mg/Ca seawater correction.
     """
     return np.array(MGSW_POST['beta_draws'][:, ::2][:, :1000])
-
 
 def get_draws(species):
     """Get MCMC parameter draws
