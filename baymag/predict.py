@@ -109,12 +109,7 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
     alpha, beta_temp, beta_salinity, beta_omega, beta_ph, beta_clean, sigma = drawsfun(spp)
 
     clean_term = (1 - beta_clean * cleaning[:, np.newaxis])
-    # debug
-    #print('shape of alpha {}, beta_temp {}, beta_salinity {}, beta_omega {}, beta_ph {}, beta_clean {}, sigma {}'.format(alpha.shape, beta_temp.shape, beta_salinity.shape, beta_omega.shape, beta_ph.shape, beta_clean.shape, sigma.shape))
     
-    #print('shape of clean_term {}, seatemp {}, seatemp np.newaxis {}'.format(clean_term.shape, seatemp.shape, seatemp[:, np.newaxis].shape))
-    
-    #print('shape of beta_temp * seatemp[:, np.newaxis] {}'.format((beta_temp * seatemp[:, np.newaxis]).shape))
     alphaadj = np.tile(alpha,nlen)
     mu = (np.transpose(alphaadj) + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
           + beta_salinity * salinity[:, np.newaxis] + clean_term)
@@ -125,7 +120,7 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
         mu += beta_ph * ph[:, np.newaxis]
         #mu += beta_ph * ph
     mgca = np.exp(np.random.normal(mu, np.transpose(np.tile(sigma,nlen))))
-    #mgca = np.exp(np.random.normal(mu, sigma))
+    
 
     out = MgCaPrediction(ensemble=mgca, spp=spp)
 
