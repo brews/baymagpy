@@ -110,17 +110,25 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
 
     clean_term = (1 - beta_clean * cleaning[:, np.newaxis])
     
-    alphaadj = np.tile(alpha,nlen)
-    mu = (np.transpose(alphaadj) + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
-          + beta_salinity * salinity[:, np.newaxis] + clean_term)
+    if spp in ['all', 'all_sea']:
+        alphaadj = np.tile(alpha,nlen)
+        print('shape of alpha {}, beta_temp {}, seatemp {}, seatnew {}'.format(alphaadj.shape, beta_temp.shape,seatemp.shape,seatemp[:, np.newaxis].shape))
+        print('shape of beta_omega {}, omega {}, beta_salinity {}, sal {}, clean_term {}'.format(beta_omega.shape, omega.shape, beta_salinity.shape, salinity[:, np.newaxis].shape, clean_term.shape))
     
-    #mu = (alpha + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
-    #      + beta_salinity * salinity[:, np.newaxis] + clean_term)
-    if spp != 'pachy':
-        mu += beta_ph * ph[:, np.newaxis]
-        #mu += beta_ph * ph
-    mgca = np.exp(np.random.normal(mu, np.transpose(np.tile(sigma,nlen))))
-    
+        mu = (np.transpose(alphaadj) + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
+              + beta_salinity * salinity[:, np.newaxis] + clean_term)
+        if spp != 'pachy': 
+            mu += beta_ph * ph[:, np.newaxis]
+        mgca = np.exp(np.random.normal(mu, np.transpose(np.tile(sigma,nlen))))
+        
+    else:
+        mu = (alpha + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
+              + beta_salinity * salinity[:, np.newaxis] + clean_term)
+        if spp != 'pachy':
+            #mu += beta_ph * ph
+            mu += beta_ph * ph[:, np.newaxis]
+        mgca = np.exp(np.random.normal(mu, sigma))
+    #mgca = np.exp(np.random.normal(mu, np.transpose(np.tile(sigma,nlen))))
 
     out = MgCaPrediction(ensemble=mgca, spp=spp)
 
