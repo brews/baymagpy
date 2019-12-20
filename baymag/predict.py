@@ -112,24 +112,23 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
     
     if spp in ['all', 'all_sea']:
         alphaadj = np.tile(alpha,nlen)
-        print('shape of alpha {}, beta_temp {}, seatemp {}, seatnew {}'.format(alphaadj.shape, beta_temp.shape,seatemp.shape,seatemp[:, np.newaxis].shape))
-        print('shape of beta_omega {}, omega {}, beta_salinity {}, sal {}, clean_term {}'.format(beta_omega.shape, omega.shape, beta_salinity.shape, salinity[:, np.newaxis].shape, clean_term.shape))
-    
+        
         mu = (np.transpose(alphaadj) + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
               + beta_salinity * salinity[:, np.newaxis] + clean_term)
+        
         if spp != 'pachy': 
             mu += beta_ph * ph[:, np.newaxis]
+            
         mgca = np.exp(np.random.normal(mu, np.transpose(np.tile(sigma,nlen))))
         
     else:
         mu = (alpha + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
               + beta_salinity * salinity[:, np.newaxis] + clean_term)
         if spp != 'pachy':
-            #mu += beta_ph * ph
             mu += beta_ph * ph[:, np.newaxis]
+            
         mgca = np.exp(np.random.normal(mu, sigma))
-    #mgca = np.exp(np.random.normal(mu, np.transpose(np.tile(sigma,nlen))))
-
+        
     out = MgCaPrediction(ensemble=mgca, spp=spp)
 
     return out
@@ -154,27 +153,12 @@ def sw_correction(mgcaprediction, age, drawsfun=None):
     out : baymag.MgCaPrediction
         Copy of mgcaprediction with correction to ensemble.
     """
-    #if drawsfun is None:
-    #    beta_draws = get_sw_draws()
-    #else:
-    #    beta_draws = drawsfun()
+
     mgsw_smooth = get_mgsw_smooth()
-    #age = np.asanyarray(age)
-    # debug
-    #print('shape of beta_draws {}, age {}'.format(beta_draws.shape, age.shape))
-    #print('shape beta_draws [0] and [1] are {}, {}'.format(beta_draws[0].shape, beta_draws[1].shape))
-    #mgsw = 1 / (beta_draws[0] * age[:, np.newaxis] + beta_draws[1])
-    #print('mgsw shape {}'.format(mgsw.shape))
-    #print('mgsw[0] {}'.format(mgsw[0]))
-    #print('mgsw_modern {}'.format(mgsw_smooth.shape))
-    # ratio to modern value
-    #mgsw /= mgsw[0]
+
     t = int(age * 2)
+    
     mgsw = np.divide(mgsw_smooth[t,:] , mgsw_smooth[0,:])
-    #print('mgsw shape {}'.format(mgsw.shape))
-    #print('mgsw mean {}'.format(np.mean(mgsw)))
-    #out = MgCaPrediction(ensemble=np.array(mgcaprediction.ensemble * np.exp(mgsw)),
-    #                     spp=str(mgcaprediction.spp))
     
     out = MgCaPrediction(ensemble=np.array(mgcaprediction.ensemble * mgsw),
                          spp=str(mgcaprediction.spp))
