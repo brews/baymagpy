@@ -76,7 +76,7 @@ def fetch_ph(latlon):
     # Very literal version of Jess Tierney's `omgph` for MATLAB. I'm so sorry.
     ph_ds = get_netcdf_resource('omgph/observations/GLODAPv2.2016b.pHtsinsitutp_subset.nc')[
         ['pHtsinsitutp', 'pHtsinsitutp_error', 'lat', 'lon']]
-
+    
     lat_f = ph_ds.lat.values
     lon_f = ph_ds.lon.values
     ph_field = ph_ds.pHtsinsitutp.values.T
