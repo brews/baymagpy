@@ -122,8 +122,7 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
         mu = (alpha + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
               + beta_salinity * salinity[:, np.newaxis] + clean_term)
 
-        #if spp != 'pachy': # RT: this is not right ... see next 2 lines
-        # if other than pachy or sacculifer, take sensitivity to pH into account
+        # if spp other than pachy or sacculifer, take sensitivity to pH into account
         if spp not in ['pachy', 'sacculifer']:
             mu += beta_ph * ph[:, np.newaxis]
             
