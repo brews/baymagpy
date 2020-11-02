@@ -62,17 +62,17 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
 
     Parameters
     ----------
-    seatemp : scalar or ndarray (N x 1)
+    seatemp : ndarray
         n-length array of sea temperature observations (°C) from a single
         location.
     cleaning : ndarray
         Binary n-length array indicating the cleaning method used for the
         inferred Mg/Ca series. ``1`` for reductive, ``0`` for BCP (Barker).
-    salinity : scalar or ndarray (N x 1)
+    salinity : scalar or ndarray
         Sea water salinity (PSU).
-    ph : scalar or ndarray (N x 1)
+    ph : scalar or ndarray
         Sea water pH.
-    omega : scalar or ndarray (N x 1)
+    omega : scalar or ndarray
         Sea water calcite saturation state.
     spp : str
         Calibration model parameter options. Must be one of:
@@ -99,7 +99,7 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
     MatLab code created by Dr. Jessica Tierney, The University of Arizona (2019)
     Python code by S. Brewster Malevich, The University of Arizona
     Modified by Robert Tardif, University of Washington
-    Modified by Mingsong Li Penn State Nov 2, 2020
+    Modified by Mingsong Li Penn State (2020)
     """
     seatemp = np.atleast_1d(seatemp)
     cleaning = np.atleast_1d(cleaning)
