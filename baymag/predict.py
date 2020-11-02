@@ -10,7 +10,7 @@ import numpy as np
 
 from baymag.modelparams import get_draws
 from baymag.modelparams import get_sw_draws
-
+from baymag.modelparams import get_mgsw_smooth
 
 @attr.s
 class Prediction:
@@ -62,17 +62,17 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
 
     Parameters
     ----------
-    seatemp : ndarray
+    seatemp : scalar or ndarray (N x 1)
         n-length array of sea temperature observations (°C) from a single
         location.
     cleaning : ndarray
         Binary n-length array indicating the cleaning method used for the
         inferred Mg/Ca series. ``1`` for reductive, ``0`` for BCP (Barker).
-    salinity : scalar or ndarray
+    salinity : scalar or ndarray (N x 1)
         Sea water salinity (PSU).
-    ph : scalar or ndarray
+    ph : scalar or ndarray (N x 1)
         Sea water pH.
-    omega : scalar or ndarray
+    omega : scalar or ndarray (N x 1)
         Sea water calcite saturation state.
     spp : str
         Calibration model parameter options. Must be one of:
@@ -95,12 +95,18 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
     fetch_omega : Calculate modern insitu calcite saturation state (omega)
     fetch_ph : Fetch modern seawater surface insitu pH
     sw_correction : Apply Deep-Time seawater correction to Mg/Ca predictions
+
+    MatLab code created by Dr. Jessica Tierney, The University of Arizona (2019)
+    Python code by S. Brewster Malevich, The University of Arizona
+    Modified by Robert Tardif, University of Washington
+    Modified by Mingsong Li Penn State Nov 2, 2020
     """
     seatemp = np.atleast_1d(seatemp)
     cleaning = np.atleast_1d(cleaning)
     salinity = np.atleast_1d(salinity)
     ph = np.atleast_1d(ph)
 
+    nlens = np.size(seatemp)
     # Invert omega for model.
     omega = omega ** -2
     omega = np.atleast_1d(omega)
@@ -108,10 +114,18 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
     alpha, beta_temp, beta_salinity, beta_omega, beta_ph, beta_clean, sigma = drawsfun(spp)
 
     clean_term = (1 - beta_clean * cleaning[:, np.newaxis])
+
+    if spp in ['all', 'all_sea']:
+        sigma = np.swapaxes(np.tile(sigma, nlens), 0, 1)
+        alpha = np.swapaxes(np.tile(alpha, nlens), 0, 1)
+
     mu = (alpha + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
-          + beta_salinity * salinity[:, np.newaxis] + clean_term)
-    if spp != 'pachy':
-        mu += beta_ph * ph
+        + beta_salinity * salinity[:, np.newaxis] + clean_term)
+
+    # if spp other than pachy or sacculifer, take sensitivity to pH into account
+    if spp not in ['pachy', 'sacculifer']:
+        mu += beta_ph * ph[:, np.newaxis]
+
     mgca = np.exp(np.random.normal(mu, sigma))
 
     out = MgCaPrediction(ensemble=mgca, spp=spp)
@@ -138,17 +152,13 @@ def sw_correction(mgcaprediction, age, drawsfun=None):
     out : baymag.MgCaPrediction
         Copy of mgcaprediction with correction to ensemble.
     """
-    if drawsfun is None:
-        beta_draws = get_sw_draws()
-    else:
-        beta_draws = drawsfun()
 
-    age = np.asanyarray(age)
-    mgsw = 1 / (beta_draws[0] * age[:, np.newaxis] + beta_draws[1])
+    mgsw_smooth = get_mgsw_smooth()
 
-    # ratio to modern value
-    mgsw /= mgsw[0]
-
+    t = int(age * 2)
+    
+    mgsw = np.divide(mgsw_smooth[t,:] , mgsw_smooth[0,:])
+    
     out = MgCaPrediction(ensemble=np.array(mgcaprediction.ensemble * mgsw),
                          spp=str(mgcaprediction.spp))
     return out
