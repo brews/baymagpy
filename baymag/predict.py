@@ -62,17 +62,17 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
 
     Parameters
     ----------
-    seatemp : ndarray
+    seatemp : scalar or ndarray (N x 1)
         n-length array of sea temperature observations (°C) from a single
         location.
     cleaning : ndarray
         Binary n-length array indicating the cleaning method used for the
         inferred Mg/Ca series. ``1`` for reductive, ``0`` for BCP (Barker).
-    salinity : scalar or ndarray
+    salinity : scalar or ndarray (N x 1)
         Sea water salinity (PSU).
-    ph : scalar or ndarray
+    ph : scalar or ndarray (N x 1)
         Sea water pH.
-    omega : scalar or ndarray
+    omega : scalar or ndarray (N x 1)
         Sea water calcite saturation state.
     spp : str
         Calibration model parameter options. Must be one of:
@@ -95,13 +95,18 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
     fetch_omega : Calculate modern insitu calcite saturation state (omega)
     fetch_ph : Fetch modern seawater surface insitu pH
     sw_correction : Apply Deep-Time seawater correction to Mg/Ca predictions
+
+    MatLab code created by Dr. Jessica Tierney, The University of Arizona (2019)
+    Python code by S. Brewster Malevich, The University of Arizona
+    Modified by Robert Tardif, University of Washington
+    Modified by Mingsong Li Penn State Nov 2, 2020
     """
     seatemp = np.atleast_1d(seatemp)
     cleaning = np.atleast_1d(cleaning)
     salinity = np.atleast_1d(salinity)
     ph = np.atleast_1d(ph)
-    
-    nlen = np.size(seatemp)
+
+    nlens = np.size(seatemp)
     # Invert omega for model.
     omega = omega ** -2
     omega = np.atleast_1d(omega)
@@ -109,25 +114,20 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
     alpha, beta_temp, beta_salinity, beta_omega, beta_ph, beta_clean, sigma = drawsfun(spp)
 
     clean_term = (1 - beta_clean * cleaning[:, np.newaxis])
-    
-    if spp in ['all', 'all_sea']:
-        alphaadj = np.tile(alpha,nlen)
-        
-        mu = (np.transpose(alphaadj) + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
-              + beta_salinity * salinity[:, np.newaxis] + clean_term)
-        
-        mgca = np.exp(np.random.normal(mu, np.transpose(np.tile(sigma,nlen))))
-        
-    else:
-        mu = (alpha + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
-              + beta_salinity * salinity[:, np.newaxis] + clean_term)
 
-        # if spp other than pachy or sacculifer, take sensitivity to pH into account
-        if spp not in ['pachy', 'sacculifer']:
-            mu += beta_ph * ph[:, np.newaxis]
-            
-        mgca = np.exp(np.random.normal(mu, sigma))
-        
+    if spp in ['all', 'all_sea']:
+        sigma = np.swapaxes(np.tile(sigma, nlens), 0, 1)
+        alpha = np.swapaxes(np.tile(alpha, nlens), 0, 1)
+
+    mu = (alpha + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
+        + beta_salinity * salinity[:, np.newaxis] + clean_term)
+
+    # if spp other than pachy or sacculifer, take sensitivity to pH into account
+    if spp not in ['pachy', 'sacculifer']:
+        mu += beta_ph * ph[:, np.newaxis]
+
+    mgca = np.exp(np.random.normal(mu, sigma))
+
     out = MgCaPrediction(ensemble=mgca, spp=spp)
 
     return out
