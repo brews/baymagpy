@@ -2,7 +2,7 @@
 """
 
 
-__all__ = ['predict_mgca', 'sw_correction']
+__all__ = ['predict_mgca', 'predict_mgca_ln', 'sw_correction']
 
 
 import attr
