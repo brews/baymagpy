@@ -132,6 +132,86 @@ def predict_mgca(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws
 
     return out
 
+def predict_mgca_ln(seatemp, cleaning, salinity, ph, omega, spp, drawsfun=get_draws):
+    """Predict Mg/Ca from sea temperature
+
+    Parameters
+    ----------
+    seatemp : ndarray
+        n-length array of sea temperature observations (°C) from a single
+        location.
+    cleaning : ndarray
+        Binary n-length array indicating the cleaning method used for the
+        inferred Mg/Ca series. ``1`` for reductive, ``0`` for BCP (Barker).
+    salinity : scalar or ndarray
+        Sea water salinity (PSU).
+    ph : scalar or ndarray
+        Sea water pH.
+    omega : scalar or ndarray
+        Sea water calcite saturation state.
+    spp : str
+        Calibration model parameter options. Must be one of:
+        'all' : Pooled calibration using annual SSTs.
+        'all_sea' : Pooled calibration using seasonal SSTs.
+        'ruber' : Hierarchical calibration with G. ruber (white or pink).
+        'bulloides' : Hierarchical calibration with G. bulloides.
+        'sacculifer' : Hierarchical calibration with G. sacculifer.
+        'pachy' : Hierarchical calibration with N. pachyderma or N. incompta.
+    drawsfun : function-like, optional
+        For debugging and testing. Object to be called to get MCMC model
+        parameter draws. Don't mess with this.
+
+    Returns
+    -------
+    out : MgCaPrediction
+
+    See Also
+    --------
+    fetch_omega : Calculate modern insitu calcite saturation state (omega)
+    fetch_ph : Fetch modern seawater surface insitu pH
+    sw_correction : Apply Deep-Time seawater correction to Mg/Ca predictions
+
+    MatLab code created by Dr. Jessica Tierney, The University of Arizona (2019)
+    Python code by S. Brewster Malevich, The University of Arizona
+    Modified by Robert Tardif, University of Washington
+    Modified by Mingsong Li Penn State (2020)
+    
+    Modified by Mingsong Li, Peking University (May 10, 2021)
+        in line with the "baymag_forward_ln.m" of [BAYMAG](https://github.com/jesstierney/BAYMAG)
+        
+    """
+    seatemp = np.atleast_1d(seatemp)
+    cleaning = np.atleast_1d(cleaning)
+    salinity = np.atleast_1d(salinity)
+    ph = np.atleast_1d(ph)
+
+    nlens = np.size(seatemp)
+    # Invert omega for model.
+    omega = omega ** -2
+    omega = np.atleast_1d(omega)
+
+    alpha, beta_temp, beta_salinity, beta_omega, beta_ph, beta_clean, sigma = drawsfun(spp)
+
+    clean_term = (1 - beta_clean * cleaning[:, np.newaxis])
+
+    if spp in ['all', 'all_sea']:
+        sigma = np.swapaxes(np.tile(sigma, nlens), 0, 1)
+        alpha = np.swapaxes(np.tile(alpha, nlens), 0, 1)
+
+    mu = (alpha + beta_temp * seatemp[:, np.newaxis] + beta_omega * omega[:, np.newaxis]
+        + beta_salinity * salinity[:, np.newaxis] + clean_term)
+
+    # if spp other than pachy or sacculifer, take sensitivity to pH into account
+    if spp not in ['pachy', 'sacculifer']:
+        mu += beta_ph * ph[:, np.newaxis]
+
+    # The only difference vs. predict_mgca
+    mgca = np.random.normal(mu, sigma)
+
+    out = MgCaPrediction(ensemble=mgca, spp=spp)
+
+    return out
+
 
 def sw_correction(mgcaprediction, age, drawsfun=None):
     """Apply Deep-Time seawater correction to Mg/Ca prediction.

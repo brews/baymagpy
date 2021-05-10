@@ -1,6 +1,18 @@
-# v0.0.1a5
+# v0.1.1
 
 ## Enhancements
+
+
+## Bug fixes
+
+
+# v0.1.0
+
+## Enhancements
+
+* Add baymag_forward_ln model.
+
+* Update Readme.
 
 ## Bug fixes
 

@@ -8,13 +8,13 @@ def readme():
 
 setup(
     name='baymagpy',
-    version='0.0.2',
+    version='0.1.0',
     description='Calibration of Mg/Ca records using Bayesian regression',
     long_description=readme(),
     long_description_content_type="text/markdown",
     license='GPLv3',
-    author='S. Brewster Malevich',
-    author_email='malevich@email.arizona.edu',
+    author='S. Brewster Malevich and Mingsong Li',
+    author_email='malevich@email.arizona.edu msli@pku.edu.cn',
     url='https://github.com/brews/baymagpy',
     classifiers=[
         'Development Status :: 3 - Alpha',
