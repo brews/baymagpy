@@ -2,6 +2,7 @@
 
 ## Enhancements
 
+* Update .mat files, in line with [BAYMAG](https://github.com/jesstierney/BAYMAG)
 
 ## Bug fixes
 
